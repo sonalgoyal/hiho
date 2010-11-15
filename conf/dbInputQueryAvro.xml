@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+/**
+ * Copyright 2010 Nube Technologies
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed 
+ * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+ * CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and limitations under the License. 
+ */
+-->
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+<property>
+ <name>mapreduce.jdbc.driver.class</name>
+ <value>com.mysql.jdbc.Driver</value>
+</property>
+<property>
+ <name>mapreduce.jdbc.url</name>
+ <value>jdbc:mysql://localhost:3306/cumulus</value>
+</property>
+<property>
+ <name>mapreduce.jdbc.username</name>
+ <value>root</value>
+</property>
+<property>
+ <name>mapreduce.jdbc.password</name>
+ <value>newpwd</value>
+</property>
+<property>
+ <name>mapreduce.jdbc.input.query</name>
+ <value>select extractJobEmployee.id, extractJobEmployee.name, extractJobEmployee.age, extractJobEmployee.salary, designations.id, designations.designation from extractJobEmployee, designations where extractJobEmployee.designationId = designations.id and extractJobEmployee.isMarried = ? AND $CONDITIONS</value>
+</property>
+<property>
+ <name>mapreduce.jdbc.input.orderby</name>
+ <value>extractJobEmployee.id</value>
+</property>
+<property>
+ <name>mapreduce.jdbc.hiho.input.outputPath</name>
+ <value>avro</value>
+</property>
+<property>
+ <name>mapreduce.jdbc.hiho.input.outputStrategy</name>
+ <value>AVRO</value>
+</property>
+<property>
+ <name>mapred.jdbc.input.bounding.query</name>
+ <value>select min(id)+5, max(id)-5 from extractJobEmployee</value>
+</property>	
+<property>
+ <name>io.serializations</name>
+ <value>org.apache.hadoop.io.serializer.JavaSerialization,org.apache.hadoop.io.serializer.WritableSerialization</value>
+</property>	
+<property>
+ <name>mapreduce.jdbc.hiho.number.mappers</name>
+ <value>3</value>
+</property>
+</configuration>
