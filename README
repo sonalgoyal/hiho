@@ -5,3 +5,69 @@ This branch is for support for HIHO on Apache Hadoop pre 0.21. HIHO has a depend
 and other db related code in the apache Hadoop 0.21 branch. However, 0.21 is still not production ready and a lot of our clients want 
 HIHO to work with the earlier versions. This branch does precisely that. 
 
+HIHO Features:
+1. Import from a database to HDFS
+- query based import
+- table based import
+- incremental import by appending to existing HDFS location so that all data is in one place.
+- configurable format for data import - delimited, avro
+
+Check more at http://code.google.com/p/hiho
+
+2. Export to Database
+- high performance MySQL loading using LOAD DATA INFILE
+Check more at http://code.google.com/p/hiho
+
+- high performance Oracle loading by creating external tables. See expert opinion http://asktom.oracle.com/pls/asktom/f?p=100:11:0::::P11_QUESTION_ID:6611962171229
+For information on external tables, check http://download.oracle.com/docs/cd/B12037_01/server.101/b10825/et_concepts.htm
+
+mkdir -p ageTest
+create or replace directory age_ext as '/home/nube/age';
+bin/hadoop jar ~/workspace/hiho/build/classes/hiho.jar co.nubetech.hiho.job.ExportToOracleDb -conf ~/workspace/hiho/conf/oracleExport.xml ~/workspace/hiho/testData/
+
+- custom loading and export to any database by emitting own GenericDBWritables. Check DelimitedLoadMapper
+
+3. Export to SalesForce  
+- send computed map reduce results to Salesforce.
+
+For this, you need to have a developer account with Bulk API enabled. You can join at http://developer.force.com/join
+ 
+If you get message: [LoginFault [ApiFault  exceptionCode='INVALID_LOGIN' exceptionMessage='Invalid username, password, security token; or user locked out.'
+"Invalid username, password, security token; or user locked out. Are you at a new location? When accessing Salesforce--either via a desktop client or the API--from outside of your company’s trusted networks, you must add a security token to your password to log in. To receive a new security token, log in to Salesforce at http://www.salesforce.com and click Setup | My Personal Information | Reset Security Token."
+login and get the security token. then try
+
+mapreduce.jdbc.hiho.sf.usrname - Name of Salesforce account
+mapreduce.jdbc.hiho.sf.password - Password and security token. The Security Token can be obtained by logging in to the Salesforce.com site and clicking on Reset Security Token.
+mapreduce.jdbc.hiho.sf.sobjectype - The Salesforce object to export
+mapreduce.jdbc.hiho.sf.headers - header describing the Salesforce object properties. For more information, refer to the Bulk API Developer's Guide.
+
+bin/hadoop jar hiho-0.3.0.jar co.nubetech.hiho.job.sf.ExportSalesForceJob -conf salesForceExport.xml <path to data>
+
+
+5. Export results to an FTP Server.
+If you want to write results directly to an FTP server, you can create a configuration file with the following properties:
+mapreduce.hiho.ftp.username - FTP server login username
+mapreduce.hiho.ftp.serveraddress - FTP server address
+mapreduce.hiho.ftp.portnumber - FTP port
+mapreduce.hiho.ftp.password - FTP server password
+
+For an example configuration, check conf/ftpExport.xml
+
+Use the co.nubetech.hiho.mapreduce.lib.output.FTPOutputFormat directly in your job, just like FileOutputFormat. For usage, check co.nubetech.hiho.job.ExportToFTPserver. This job writes the output directly to an FTP server. It can be invoked as;
+bin/hadoop jar hiho.jar co.nubetech.hiho.job.ExportToFTPServer -conf ftpExport.xml input output
+Where output is the location on the FTP server to which the output will be written. It should be a complete directory path - /home/sgoyal/output  
+
+
+
+New Features in this release
+-incremental import and introduction of AppendFileInputFormat
+-Oracle export
+-FTP Server integration
+-Salesforce
+-Support for Apache 0.20
+
+Other improvements
+-Ivy based build and dependency management
+-Junit and mockito based test cases 
+
+
