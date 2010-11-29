@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -29,11 +30,12 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.log4j.Logger;
 
 public class FileStreamRecordReader extends
-		RecordReader<NullWritable, FSDataInputStream> {
+		RecordReader<Text, FSDataInputStream> {
 	private FileSplit split;
 	private TaskAttemptContext context;
 	private FSDataInputStream stream;
 	private boolean isRead = false;
+	private String fileName;
 
 	final static Logger logger = Logger
 			.getLogger(co.nubetech.hiho.mapreduce.lib.input.FileStreamRecordReader.class);
@@ -58,8 +60,8 @@ public class FileStreamRecordReader extends
 	}
 
 	@Override
-	public NullWritable getCurrentKey() {
-		return NullWritable.get();
+	public Text getCurrentKey() {
+		return new Text(fileName);
 	}
 
 	@Override
@@ -80,6 +82,7 @@ public class FileStreamRecordReader extends
 		if (!isRead) {
 			Path file = split.getPath();
 			logger.debug("Path is " + file);
+			fileName = file.getName();
 			FileSystem fs = file.getFileSystem(context.getConfiguration());
 			stream = fs.open(file);
 			logger.debug("Opened stream");

@@ -14,6 +14,7 @@
  */
 package co.nubetech.hiho.job;
 
+import java.io.File;
 import java.io.IOException;
 
 import java.sql.*;
@@ -22,10 +23,12 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import co.nubetech.apache.hadoop.*;
+
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -51,27 +54,21 @@ public class ExportToOracleDb extends Configured implements Tool {
 					+ entry.getValue());
 		}
 
-		// we first create the external table definition
-		String query = conf.get(HIHOConf.EXTERNAL_TABLE_DML);
-
-		String filename = "";
-		try {
-			filename = this.getFilename(query);
-		} catch (HIHOException e) {
-
-			e.printStackTrace();
-		}
-		conf.set(HIHOConf.EXTERNAL_TABLE_FILENAME, filename);
-		logger.debug("Setting key and value "
-				+ HIHOConf.EXTERNAL_TABLE_FILENAME + " : " + filename);
-
+		
+		
 		Job job = new Job(conf);
 		job.setJobName("OracleLoading");
 		job.setMapperClass(OracleLoadMapper.class);
 		job.setJarByClass(ExportToOracleDb.class);
+		job.getConfiguration().setInt(MRJobConfig.NUM_MAPS, conf.getInt(HIHOConf.NUMBER_MAPPERS, 1));
 
 		try {
-			this.runQuery(query, conf);
+			// we first create the external table definition
+			String query = conf.get(HIHOConf.EXTERNAL_TABLE_DML);
+			//create table if user has specified
+			if (query != null) {
+				this.runQuery(query, conf);
+			}
 		} catch (HIHOException e1) {
 
 			e1.printStackTrace();
@@ -81,7 +78,8 @@ public class ExportToOracleDb extends Configured implements Tool {
 
 		job.setNumReduceTasks(0);
 		job.setInputFormatClass(FileStreamInputFormat.class);
-		FileStreamInputFormat.addInputPath(job, new Path(args[0]));
+		Path inputPath = new Path(args[0]);
+		FileStreamInputFormat.addInputPath(job, inputPath);
 		job.setMapOutputKeyClass(NullWritable.class);
 		job.setMapOutputValueClass(NullWritable.class);
 		// job.setJarByClass(com.mysql.jdbc.Driver.class);
@@ -89,13 +87,19 @@ public class ExportToOracleDb extends Configured implements Tool {
 
 		int ret = 0;
 		try {
-			logger.debug("Before runnign the job, key and value "
-					+ HIHOConf.EXTERNAL_TABLE_FILENAME + " : " + filename);
-			// job.getConfiguration().set(HIHOConf.EXTERNAL_TABLE_FILENAME,
-			// filename);
+			
 			ret = job.waitForCompletion(true) ? 0 : 1;
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			e.printStackTrace();
+		}
+		//run alter table query and add locations			
+		try {
+			this.runQuery(getAlterTableDML(inputPath, conf), conf);
+		} 
+		catch (HIHOException e1) {
+
+			e1.printStackTrace();
 		}
 		return ret;
 	}
@@ -105,43 +109,81 @@ public class ExportToOracleDb extends Configured implements Tool {
 				args);
 		System.exit(res);
 	}
+	
+	public static String getAlterTableDML(Path inputPath, Configuration conf)  throws IOException, HIHOException{
+		//after running the job, we need to alter the external table to take care of the files we have added
+		FileStatus[] contents = inputPath.getFileSystem(conf).listStatus(inputPath);
+		if (contents != null) {
+			StringBuilder dml = new StringBuilder();
+			dml.append(" ALTER TABLE ");
+			dml.append(getTableName(conf.get(HIHOConf.EXTERNAL_TABLE_DML)));
+			dml.append(" LOCATION (" );
+			int i=0;
+			for (FileStatus content: contents) {
+				String fileName = content.getPath().getName();
+				dml.append("\'");
+				dml.append(fileName);
+				dml.append("\'");
+				//add comma uptil one and last
+				if ( i < contents.length -1) {
+					dml.append(",");
+				}
+				i++;
+			}		
+			//execute dml to alter location
+			
+			dml.append(")");
+			return dml.toString();
+		}
+			return null;
+		}
 
-	public String getFilename(String query) throws HIHOException {
-		String[] temp2 = new String[10];
+	public static String getTableName(String query) throws HIHOException {
+		String tableName = null;
 		if (query == null)
 			throw new HIHOException("Cannot read query");
-		int i = query.indexOf("location");
-		if (i == -1)
-			throw new HIHOException(
-					"Wrong configuration for external table cannot find filename for table");
+		
+		try {
+			StringTokenizer tokenizer = new StringTokenizer(query, "() ");
+			while (tokenizer.hasMoreTokens()) {
+				String token = tokenizer.nextToken();
+				if (token.equalsIgnoreCase("table")) {
+					tableName = tokenizer.nextToken();
+				}
+			}
+		}
+		catch(Exception e) {
+			throw new HIHOException("Unable to get table name from the external table query");
+		}
+		if (tableName == null) {
+			throw new HIHOException("Unable to get table name from the external table query");
+		}
+		return tableName;
+		}
+	
+	public static String getExternalDir(String query) throws HIHOException {
+		String tableName = null;
+		if (query == null)
+			throw new HIHOException("Cannot read query");
+		
+		try {
+			StringTokenizer tokenizer = new StringTokenizer(query, " ");
+			while (tokenizer.hasMoreTokens()) {
+				String token = tokenizer.nextToken();
+				if (token.equalsIgnoreCase("directory")) {
+					tableName = tokenizer.nextToken();
+				}
+			}
+		}
+		catch(Exception e) {
+			throw new HIHOException("Unable to get directory name from the external table query");
+		}
+		if (tableName == null) {
+			throw new HIHOException("Unable to get directory name from the external table query");
+		}
+		return tableName;
+		}
 
-		int l = query.indexOf("(", i);
-		if (l == -1)
-			throw new HIHOException(
-					"Wrong configuration for external table cannot find filename for table");
-
-		int r = query.indexOf(")", l + 1);
-		if (r == -1)
-			throw new HIHOException(
-					"Wrong configuration for external table cannot find filename for table");
-
-		String temp = query.substring(l, r);
-
-		l = temp.indexOf("'");
-		if (l == -1)
-			throw new HIHOException(
-					"Wrong configuration for external table cannot find filename for table");
-
-		r = temp.indexOf("'", l + 1);
-		if (r == -1)
-			throw new HIHOException(
-					"Wrong configuration for external table cannot find filename for table");
-
-		temp = temp.substring(l + 1, r);
-
-		return temp.trim();
-
-	}
 
 	/**
 	 * This function creates the external table. the following queries have been
@@ -180,9 +222,9 @@ public class ExportToOracleDb extends Configured implements Tool {
 			conn.close();
 
 		} catch (Exception e) {
-			// e.printStackTrace();
+		    e.printStackTrace();
 			throw new HIHOException(
-					"Sql syntax error in query cannot create external table\n"
+					"Sql syntax error in query " + query  
 							+ e);
 		}
 

@@ -45,19 +45,22 @@ public class DBQueryInputFormat extends
 
 		logger.debug("Creating db record reader for db product: "
 				+ dbProductName);
-
+		ArrayList params = null;
 		try {
-			logger.debug("creating stringifier in DBQueryInputFormat");
-			DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
+			if (conf.get(HIHOConf.QUERY_PARAMS) != null) {
+				logger.debug("creating stringifier in DBQueryInputFormat");
+				DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
 					conf, ArrayList.class);
-			logger.debug("created stringifier");
-			ArrayList params = stringifier.fromString(conf
+				logger.debug("created stringifier");
+			
+				params = stringifier.fromString(conf
 					.get(HIHOConf.QUERY_PARAMS));
-			logger.debug("created params");
-			// use database product name to determine appropriate record reader.
-			if (dbProductName.startsWith("MYSQL")) {
-				// use MySQL-specific db reader.
-				return new MySQLQueryRecordReader(split, conf, getConnection(),
+				logger.debug("created params");
+			}
+				// use database product name to determine appropriate record reader.
+				if (dbProductName.startsWith("MYSQL")) {
+					// use MySQL-specific db reader.
+					return new MySQLQueryRecordReader(split, conf, getConnection(),
 						dbConf, dbConf.getInputConditions(),
 						dbConf.getInputFieldNames(),
 						dbConf.getInputTableName(), params);
@@ -86,11 +89,13 @@ public class DBQueryInputFormat extends
 			throws IOException {
 		DBInputFormat.setInput(job, GenericDBWritable.class, tableName,
 				conditions, splitBy, fieldNames);
-		DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
+		if (params != null) {
+			DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
 				job.getConfiguration(), ArrayList.class);
-		job.getConfiguration().set(HIHOConf.QUERY_PARAMS,
+			job.getConfiguration().set(HIHOConf.QUERY_PARAMS,
 				stringifier.toString(params));
-
+			logger.debug("Converted params and saved them into config");
+		}
 		job.setInputFormatClass(DBQueryInputFormat.class);
 	}
 
@@ -101,14 +106,17 @@ public class DBQueryInputFormat extends
 	public static void setInput(Job job, String inputQuery,
 			String inputBoundingQuery, ArrayList params) throws IOException {
 		DBInputFormat.setInput(job, GenericDBWritable.class, inputQuery, "");
-		job.getConfiguration().set(DBConfiguration.INPUT_BOUNDING_QUERY,
+		if (inputBoundingQuery != null) {
+			job.getConfiguration().set(DBConfiguration.INPUT_BOUNDING_QUERY,
 				inputBoundingQuery);
-		DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
+		}
+		if (params != null) {
+			DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
 				job.getConfiguration(), ArrayList.class);
-
-		job.getConfiguration().set(HIHOConf.QUERY_PARAMS,
+			job.getConfiguration().set(HIHOConf.QUERY_PARAMS,
 				stringifier.toString(params));
-		logger.debug("Converted params and saved them into config");
+			logger.debug("Converted params and saved them into config");
+		}		
 		job.setInputFormatClass(DBQueryInputFormat.class);
 	}
 

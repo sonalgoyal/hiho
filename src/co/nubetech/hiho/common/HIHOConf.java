@@ -32,7 +32,7 @@ public interface HIHOConf {
 	
 	//for loading oracle data
 	public static final String EXTERNAL_TABLE_DML = "mapreduce.jdbc.hiho.oracle.externaltable.dml";
-	public static final String EXTERNAL_TABLE_FILENAME = "mapreduce.jdbc.hiho.oracle.externaltable.file";
+	//public static final String EXTERNAL_TABLE_FILENAME = "mapreduce.jdbc.hiho.oracle.externaltable.file";
 	public static final String ORACLE_FTP_ADDRESS="mapreduce.jdbc.hiho.oracle.ftp.serveraddress";
 	public static final String ORACLE_FTP_PORT="mapreduce.jdbc.hiho.oracle.ftp.portnumber";
 	public static final String ORACLE_FTP_USER="mapreduce.jdbc.hiho.oracle.ftp.username";

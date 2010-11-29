@@ -157,21 +157,24 @@ public class DBQueryInputJob extends Configured implements Tool {
 			logger.debug("Class is " + ReflectionUtils.newInstance(job.getOutputFormatClass(), job.getConfiguration()).getClass().getName());
 			job.waitForCompletion(false);
 		
-		//generatePigScript(conf, job);
-		} catch (Exception e) {
+			//generatePigScript(conf, job);
+		} 
+		/*catch (HIHOException h) {
+			h.printStackTrace();
+		}*/
+		catch(Exception e) {
 			e.printStackTrace();
-		}
-		
-		
+		}		
 		return 0;
 	}
 	
-	/*private void generatePigScript(Configuration conf,Job job) {
+	private void generatePigScript(Configuration conf,Job job) throws HIHOException {
 		///see if import to pig or hive
 		if (conf.get(HIHOConf.INPUT_OUTPUT_LOADTO).equals("pig")) {
 			try {
 				String pigScript = PigUtility.getLoadScript(HIHOConf.INPUT_OUTPUT_PATH, getDBWritable(conf));
-				File file = new File(new File(HIHOConf.INPUT_OUTPUT_LOADTO_PATH), "pigScript" + job.getJobID() + ".txt");
+				File file = new File(new File(conf.get(HIHOConf.INPUT_OUTPUT_LOADTO_PATH)), 
+						"pigScript" + job.getJobID() + ".txt");
 				FileOutputStream fos = new FileOutputStream(file);
 		        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(fos));
 		        w.write(pigScript);
@@ -179,11 +182,24 @@ public class DBQueryInputJob extends Configured implements Tool {
 		        fos.close();
 			}
 			catch (Exception h) {
-				throw new IOException("Unable to generate Pig script", h);
+				throw new HIHOException("Unable to generate Pig script", h);
 			}
 		}	
 
-	}*/
+	}
+	
+	private void generateHiveScript(Configuration conf,Job job) throws HIHOException {
+		///see if import to pig or hive
+		if (conf.get(HIHOConf.INPUT_OUTPUT_LOADTO).equals("hive")) {
+			try {
+				//HiveUtility.createTable(conf, job, getDBWritable(conf));
+			}
+			catch (Exception h) {
+				throw new HIHOException("Unable to generate Pig script", h);
+			}
+		}	
+
+	}
 
 	public static void main(String[] args) throws Exception {
 		//setUp();

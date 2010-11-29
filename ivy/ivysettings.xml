@@ -30,8 +30,11 @@
   -->
   <property name="repo.maven.org" value="http://repo1.maven.org/maven2/"
       override="false"/>
-  <property name="snapshot.apache.org"
+  <!-- property name="snapshot.apache.org"
       value="https://repository.apache.org/content/repositories/snapshots/"
+      override="false"/-->
+  <property name="archive.apache.org"
+      value="https://archive.apache.org/dist/"
       override="false"/>
   <property name="maven2.pattern"
       value="[organisation]/[module]/[revision]/[module]-[revision]"/>
@@ -44,8 +47,14 @@
   <resolvers>
     <ibiblio name="maven2" root="${repo.maven.org}"
         pattern="${maven2.pattern.ext}" m2compatible="true"/>
-    <ibiblio name="apache-snapshot" root="${snapshot.apache.org}"
-        m2compatible="true" checkmodified="true" changingPattern=".*SNAPSHOT"/>
+    <!-- ibiblio name="apache-snapshot" root="${snapshot.apache.org}"
+        m2compatible="true" checkmodified="true" changingPattern=".*SNAPSHOT"/-->
+    <ibiblio name="apache-snapshot" root="${archive.apache.org}"
+        m2compatible="true"/>
+        
+        <url name="hadoop-resolver">
+      <artifact pattern="${hadoop.mirror}/hadoop/core/[artifact]-[revision]/[artifact]-[revision].tar.gz" />
+    </url>
     
     <filesystem name="fs" m2compatible="true">
        <artifact pattern="${repo.dir}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
@@ -53,12 +62,14 @@
     </filesystem>
     
     <chain name="default" dual="true" checkmodified="true"
-        changingPattern=".*SNAPSHOT">        
+        changingPattern=".*SNAPSHOT">       
+      <resolver ref="hadoop-resolver" /> 
       <resolver ref="apache-snapshot"/> 
       <resolver ref="maven2"/>        
     </chain>
 
     <chain name="internal" dual="true">
+      <resolver ref="hadoop-resolver" />
       <resolver ref="fs"/>
       <resolver ref="apache-snapshot"/> 
       <resolver ref="maven2"/>
