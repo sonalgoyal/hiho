@@ -8,22 +8,28 @@ HIHO to work with the earlier versions. This branch does precisely that.
 HIHO Features:
 1. Import from a database to HDFS
 - query based import
+Join multiple tables, provide where conditions, dynamically bind parameters to SQL queries to get data to Hadoop. As simple as creating a simple config and running the job.
+bin/hadoop jar hiho.jar co.nubetech.hiho.job.DBQueryInputJob -conf dbInputQueryDelimited.xml
+ 
 - table based import
+bin/hadoop jar hiho.jar co.nubetech.hiho.job.DBQueryInputJob -conf dbInputTableDelimited.xml
+ 
 - incremental import by appending to existing HDFS location so that all data is in one place.
+just specify isAppend = true in the configurations and import. Import will be written to existing HDFS folder.
+
 - configurable format for data import - delimited, avro
+By specifying the mapreduce.jdbc.hiho.input.outputStrategy as DELIMITED or AVRO. 
 
-Check more at http://code.google.com/p/hiho
-
-2. Export to Database
+2. Export to Databases
 - high performance MySQL loading using LOAD DATA INFILE
-Check more at http://code.google.com/p/hiho
+bin/hadoop jar hiho.jar co.nubetech.hiho.job.ExportToMySQLDB -conf mysqlExport.xml
 
 - high performance Oracle loading by creating external tables. See expert opinion http://asktom.oracle.com/pls/asktom/f?p=100:11:0::::P11_QUESTION_ID:6611962171229
 For information on external tables, check http://download.oracle.com/docs/cd/B12037_01/server.101/b10825/et_concepts.htm
-
+On the Oracle server, you will have to make a folder, create a directory through the Oracle Client(sqlplus) and grant privileges to that. Also allow ftp to the Oracle server
 mkdir -p ageTest
-create or replace directory age_ext as '/home/nube/age';
-bin/hadoop jar ~/workspace/hiho/build/classes/hiho.jar co.nubetech.hiho.job.ExportToOracleDb -conf ~/workspace/hiho/conf/oracleExport.xml ~/workspace/hiho/testData/
+sqlplus>create or replace directory age_ext as '/home/nube/age';
+bin/hadoop jar hiho.jar co.nubetech.hiho.job.ExportToOracleDb -conf oracleExport.xml testData/
 
 - custom loading and export to any database by emitting own GenericDBWritables. Check DelimitedLoadMapper
 
@@ -56,7 +62,6 @@ For an example configuration, check conf/ftpExport.xml
 Use the co.nubetech.hiho.mapreduce.lib.output.FTPOutputFormat directly in your job, just like FileOutputFormat. For usage, check co.nubetech.hiho.job.ExportToFTPserver. This job writes the output directly to an FTP server. It can be invoked as;
 bin/hadoop jar hiho.jar co.nubetech.hiho.job.ExportToFTPServer -conf ftpExport.xml input output
 Where output is the location on the FTP server to which the output will be written. It should be a complete directory path - /home/sgoyal/output  
-
 
 
 New Features in this release
