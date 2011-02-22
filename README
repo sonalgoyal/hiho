@@ -1,9 +1,6 @@
-HIHO: Hadoop In, Hadoop Out
-Connector for Hadoop
+HIHO: Hadoop In, Hadoop Out. Hadoop Data Integration, deduplication, incremental update and more.
 
-This branch is for support for HIHO on Apache Hadoop pre 0.21. HIHO has a dependency on the DataDrivenDBInputFormat
-and other db related code in the apache Hadoop 0.21 branch. However, 0.21 is still not production ready and a lot of our clients want 
-HIHO to work with the earlier versions. This branch does precisely that. 
+This branch is for support for HIHO on Apache Hadoop 0.21. 
 
 HIHO Features:
 1. Import from a database to HDFS
@@ -145,7 +142,9 @@ New Features in this release
 -Oracle export
 -FTP Server integration
 -Salesforce
--Support for Apache 0.20
+-Support for Apache Hadoop 0.20
+-Support for Apache Hadoop 0.21
+-Generic dedup and merge
 
 Other improvements
 -Ivy based build and dependency management
