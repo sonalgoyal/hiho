@@ -22,8 +22,6 @@ import java.util.Map;
 
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.AsyncExceptionCode;
-import com.sforce.async.BatchInfo;
-
 import com.sforce.async.ContentType;
 import com.sforce.async.JobInfo;
 import com.sforce.async.RestConnection;
@@ -32,7 +30,6 @@ import com.sforce.ws.ConnectorConfig;
 import com.sforce.ws.parser.PullParserException;
 import com.sforce.ws.parser.XmlInputStream;
 import com.sforce.ws.transport.JdkHttpTransport;
-import com.sforce.ws.util.FileUtil;
 
 public class SFRestConnection extends RestConnection {
 

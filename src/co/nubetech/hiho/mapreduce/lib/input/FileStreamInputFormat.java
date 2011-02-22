@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -29,14 +29,14 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 /**
  * This class returns file streams as records which can be used directly for
- * load data infile operations of databases
+ * load data infile operations of databases The key is the filename
  * 
  * @author sgoyal
  * 
  */
 
 public class FileStreamInputFormat extends
-		FileInputFormat<NullWritable, FSDataInputStream> {
+		FileInputFormat<Text, FSDataInputStream> {
 
 	@Override
 	protected boolean isSplitable(JobContext context, Path filename) {
@@ -44,7 +44,7 @@ public class FileStreamInputFormat extends
 	}
 
 	@Override
-	public RecordReader<NullWritable, FSDataInputStream> createRecordReader(
+	public RecordReader<Text, FSDataInputStream> createRecordReader(
 			InputSplit split, TaskAttemptContext context) throws IOException,
 			InterruptedException {
 		return new FileStreamRecordReader((FileSplit) split, context);

@@ -21,9 +21,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
-import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
 import org.apache.log4j.Logger;
+
+import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.apache.hadoop.DBInputFormat;
 
 /**
  * A RecordReader that reads records from a MySQL table via

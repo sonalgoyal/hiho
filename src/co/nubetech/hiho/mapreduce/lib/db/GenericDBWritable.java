@@ -21,10 +21,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import org.apache.hadoop.mapreduce.lib.db.DBWritable;
 import org.apache.log4j.Logger;
 
-public class GenericDBWritable implements DBWritable {
+import co.nubetech.apache.hadoop.DBWritable;
+
+public class GenericDBWritable implements DBWritable, org.apache.hadoop.mapred.lib.db.DBWritable{
 
 	final static Logger logger = Logger
 			.getLogger(co.nubetech.hiho.mapreduce.lib.db.GenericDBWritable.class);
@@ -84,7 +85,7 @@ public class GenericDBWritable implements DBWritable {
 		values = new ArrayList();
 		for (int i = 0; i < columns.size(); ++i) {
 			values.add(resultSet.getObject(i + 1));
-			logger.debug("Defalyed resultset to " + values.get(i));
+			logger.debug("Added resultset to " + values.get(i));
 		}
 	}
 

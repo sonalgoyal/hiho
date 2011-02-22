@@ -25,9 +25,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hadoop.mapreduce.security.TokenCache;
 
 import co.nubetech.hiho.common.HIHOConf;
 
@@ -49,7 +47,7 @@ public class AppendTextOutputFormat extends TextOutputFormat {
 		try {
 			super.checkOutputSpecs(job);
 		} catch (FileAlreadyExistsException e) {
-			
+
 			Configuration conf = job.getConfiguration();
 
 			isAppend = conf.get(HIHOConf.IS_APPEND, "false");
@@ -59,7 +57,7 @@ public class AppendTextOutputFormat extends TextOutputFormat {
 				Path outDir = getOutputPath(job);
 				if (outDir == null) {
 					throw new InvalidJobConfException(
-							"Output directory not set.");
+							"OUTPUT directory not set.");
 				}
 			}
 		}
@@ -81,7 +79,7 @@ public class AppendTextOutputFormat extends TextOutputFormat {
 				fileCount = fileCount - 1;
 			}
 			p1 = new Path(committer.getWorkPath(), getUniqueFile(context,
-					getOutputName(context), extension));
+					"part", extension));
 		}
 		return p1;
 	}
@@ -95,7 +93,7 @@ public class AppendTextOutputFormat extends TextOutputFormat {
 		StringBuilder result = new StringBuilder();
 		result.append(name);
 		result.append('-');
-		result.append(TaskID.getRepresentingCharacter(taskId.getTaskType()));
+		// result.append(taskId.isMap() ? 'm' : 'r');
 		result.append('-');
 		result.append(NUMBER_FORMAT.format(partition));
 		result.append(extension);

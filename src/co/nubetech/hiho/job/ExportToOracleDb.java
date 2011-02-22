@@ -15,89 +15,167 @@
 package co.nubetech.hiho.job;
 
 import java.io.IOException;
-
-import java.sql.*;
-import java.util.StringTokenizer;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.map.TokenCounterMapper;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
-import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
+import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.apache.hadoop.MRJobConfig;
 import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
-import co.nubetech.hiho.mapreduce.MySQLLoadDataMapper;
 import co.nubetech.hiho.mapreduce.OracleLoadMapper;
 import co.nubetech.hiho.mapreduce.lib.input.FileStreamInputFormat;
-import co.nubetech.hiho.mapreduce.lib.output.FTPTextOutputFormat;
 
 public class ExportToOracleDb extends Configured implements Tool {
-
 	private final static Logger logger = Logger
 			.getLogger(co.nubetech.hiho.job.ExportToOracleDb.class);
+
+	private String inputPath = null;
+
+	public void populateConfiguration(String[] args, Configuration conf) {
+		for (int i = 0; i < args.length - 1; i++) {
+			if ("-inputPath".equals(args[i])) {
+				inputPath = args[++i];
+			} else if ("-oracleFtpAddress".equals(args[i])) {
+				conf.set(HIHOConf.ORACLE_FTP_ADDRESS, args[++i]);
+			} else if ("-oracleFtpPortNumber".equals(args[i])) {
+				conf.set(HIHOConf.ORACLE_FTP_PORT, args[++i]);
+			} else if ("-oracleFtpUserName".equals(args[i])) {
+				conf.set(HIHOConf.ORACLE_FTP_USER, args[++i]);
+			} else if ("-oracleFtpPassword".equals(args[i])) {
+				conf.set(HIHOConf.ORACLE_FTP_PASSWORD, args[++i]);
+			} else if ("-oracleExternalTableDirectory".equals(args[i])) {
+				conf.set(HIHOConf.ORACLE_EXTERNAL_TABLE_DIR, args[++i]);
+			} else if ("-driver".equals(args[i])) {
+				conf.set(DBConfiguration.DRIVER_CLASS_PROPERTY, args[++i]);
+			} else if ("-url".equals(args[i])) {
+				conf.set(DBConfiguration.URL_PROPERTY, args[++i]);
+			} else if ("-userName".equals(args[i])) {
+				conf.set(DBConfiguration.USERNAME_PROPERTY, args[++i]);
+			} else if ("-password".equals(args[i])) {
+				conf.set(DBConfiguration.PASSWORD_PROPERTY, args[++i]);
+			}
+		}
+	}
+
+	public void checkMandatoryConfs(Configuration conf) throws HIHOException {
+		if (inputPath == null) {
+			throw new HIHOException(
+					"The provided inputPath is empty, please specify inputPath");
+		}
+		if (conf.get(HIHOConf.ORACLE_FTP_USER) == null) {
+			throw new HIHOException(
+					"The Oracle FTP UserName is not specified, please specify Oracle FTP UserName");
+		}
+		if (conf.get(HIHOConf.ORACLE_FTP_ADDRESS) == null) {
+			throw new HIHOException(
+					"The Oracle FTP Address is not specified, please specify Oracle FTP Address");
+		}
+		if (conf.get(HIHOConf.ORACLE_FTP_PORT) == null) {
+			throw new HIHOException(
+					"The Oracle FTP Port Number is not defined, please specify Oracle FTP Port Number");
+		}
+		if (conf.get(HIHOConf.ORACLE_FTP_PASSWORD) == null) {
+			throw new HIHOException(
+					"The Oracle FTP Password is not defined, please specify Oracle FTP Password");
+		}
+		if (conf.get(HIHOConf.ORACLE_EXTERNAL_TABLE_DIR) == null) {
+			throw new HIHOException(
+					"The Oracle External Table Directory is not specified, please specify Oracle External Table Directory");
+		}
+		if (conf.get(DBConfiguration.DRIVER_CLASS_PROPERTY) == null) {
+			throw new HIHOException(
+					"The JDBC Driver is not specified, please specify JDBC Driver");
+		}
+		if (conf.get(DBConfiguration.URL_PROPERTY) == null) {
+			throw new HIHOException(
+					"The JDBC URL is not specified, please specify JDBC URL");
+		}
+		if (conf.get(DBConfiguration.USERNAME_PROPERTY) == null) {
+			throw new HIHOException(
+					"The JDBC USERNAME is not specified, please specify JDBC USERNAME");
+		}
+		if (conf.get(DBConfiguration.PASSWORD_PROPERTY) == null) {
+			throw new HIHOException(
+					"The JDBC PASSWORD is not specified, please specify JDBC PASSWORD");
+		}
+	}
 
 	@Override
 	public int run(String[] args) throws IOException {
 		Configuration conf = getConf();
-
 		for (Entry<String, String> entry : conf) {
 			logger.debug("key, value " + entry.getKey() + "="
 					+ entry.getValue());
 		}
 
-		// we first create the external table definition
-		String query = conf.get(HIHOConf.EXTERNAL_TABLE_DML);
-
-		String filename = "";
-		try {
-			filename = getTableName(query);
-		} catch (HIHOException e) {
-
-			e.printStackTrace();
+		for (int i = 0; i < args.length; i++) {
+			logger.debug("Remaining arguments are" + " " + args[i]);
 		}
-		conf.set(HIHOConf.EXTERNAL_TABLE_FILENAME, filename);
-		logger.debug("Setting key and value "
-				+ HIHOConf.EXTERNAL_TABLE_FILENAME + " : " + filename);
+		populateConfiguration(args, conf);
+
+		try {
+			checkMandatoryConfs(conf);
+		} catch (HIHOException e1) {
+			e1.printStackTrace();
+			throw new IOException(e1);
+		}
 
 		Job job = new Job(conf);
 		job.setJobName("OracleLoading");
 		job.setMapperClass(OracleLoadMapper.class);
 		job.setJarByClass(ExportToOracleDb.class);
+		job.getConfiguration().setInt(MRJobConfig.NUM_MAPS,
+				conf.getInt(HIHOConf.NUMBER_MAPPERS, 1));
 
 		try {
-			this.runQuery(query, conf);
+			// we first create the external table definition
+			String query = conf.get(HIHOConf.EXTERNAL_TABLE_DML);
+			// create table if user has specified
+			if (query != null) {
+				this.runQuery(query, conf);
+			}
 		} catch (HIHOException e1) {
 
 			e1.printStackTrace();
 		}
-		
-		job.setMapperClass(OracleLoadMapper.class);
+
+		// verify required properties are loaded
+
+		job.setNumReduceTasks(0);
 		job.setInputFormatClass(FileStreamInputFormat.class);
-		FileStreamInputFormat.addInputPath(job, new Path(args[0]));
-		job.setOutputFormatClass(NullOutputFormat.class);
-		job.setJarByClass(ExportToOracleDb.class);
+		FileStreamInputFormat.addInputPath(job, new Path(inputPath));
 		job.setMapOutputKeyClass(NullWritable.class);
 		job.setMapOutputValueClass(NullWritable.class);
-		job.setNumReduceTasks(0);
-		
+		// job.setJarByClass(com.mysql.jdbc.Driver.class);
+		job.setOutputFormatClass(NullOutputFormat.class);
+
 		int ret = 0;
 		try {
+
 			ret = job.waitForCompletion(true) ? 0 : 1;
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		// run alter table query and add locations
+		try {
+			this.runQuery(getAlterTableDML(new Path(inputPath), conf), conf);
+		} catch (HIHOException e1) {
+
+			e1.printStackTrace();
 		}
 		return ret;
 	}
@@ -108,11 +186,43 @@ public class ExportToOracleDb extends Configured implements Tool {
 		System.exit(res);
 	}
 
+	public static String getAlterTableDML(Path inputPath, Configuration conf)
+			throws IOException, HIHOException {
+		// after running the job, we need to alter the external table to take
+		// care of the files we have added
+		FileStatus[] contents = inputPath.getFileSystem(conf).listStatus(
+				inputPath);
+		if (contents != null) {
+			StringBuilder dml = new StringBuilder();
+			dml.append(" ALTER TABLE ");
+			dml.append(getTableName(conf.get(HIHOConf.EXTERNAL_TABLE_DML)));
+			dml.append(" LOCATION (");
+			int i = 0;
+			for (FileStatus content : contents) {
+				String fileName = content.getPath().getName();
+				dml.append("\'");
+				dml.append(fileName);
+				dml.append("\'");
+				// add comma uptil one and last
+				if (i < contents.length - 1) {
+					dml.append(",");
+				}
+				i++;
+			}
+			// execute dml to alter location
+
+			dml.append(")");
+			return dml.toString();
+		}
+		return null;
+	}
+
 	public static String getTableName(String query) throws HIHOException {
 		String tableName = null;
+		if (query == null)
+			throw new HIHOException("Cannot read query");
+
 		try {
-			if (query == null)
-				throw new HIHOException("Cannot read query");
 			StringTokenizer tokenizer = new StringTokenizer(query, "() ");
 			while (tokenizer.hasMoreTokens()) {
 				String token = tokenizer.nextToken();
@@ -120,12 +230,37 @@ public class ExportToOracleDb extends Configured implements Tool {
 					tableName = tokenizer.nextToken();
 				}
 			}
-			}		
-		catch(Exception e) {
-			throw new HIHOException("Unable to get table name from the external table query");
+		} catch (Exception e) {
+			throw new HIHOException(
+					"Unable to get table name from the external table query");
 		}
 		if (tableName == null) {
-			throw new HIHOException("Unable to get table name from the external table query");
+			throw new HIHOException(
+					"Unable to get table name from the external table query");
+		}
+		return tableName;
+	}
+
+	public static String getExternalDir(String query) throws HIHOException {
+		String tableName = null;
+		if (query == null)
+			throw new HIHOException("Cannot read query");
+
+		try {
+			StringTokenizer tokenizer = new StringTokenizer(query, " ");
+			while (tokenizer.hasMoreTokens()) {
+				String token = tokenizer.nextToken();
+				if (token.equalsIgnoreCase("directory")) {
+					tableName = tokenizer.nextToken();
+				}
+			}
+		} catch (Exception e) {
+			throw new HIHOException(
+					"Unable to get directory name from the external table query");
+		}
+		if (tableName == null) {
+			throw new HIHOException(
+					"Unable to get directory name from the external table query");
 		}
 		return tableName;
 	}
@@ -167,10 +302,8 @@ public class ExportToOracleDb extends Configured implements Tool {
 			conn.close();
 
 		} catch (Exception e) {
-			// e.printStackTrace();
-			throw new HIHOException(
-					"Sql syntax error in query cannot create external table\n"
-							+ e);
+			e.printStackTrace();
+			throw new HIHOException("Sql syntax error in query " + query + e);
 		}
 
 	}

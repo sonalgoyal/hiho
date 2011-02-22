@@ -38,14 +38,14 @@
 </property>
 <property>
  <name>mapreduce.jdbc.hiho.oracle.externaltable.dml</name>
- <value>create table age(
+ <value>create table externalAge(
   id   Number,
   name   Varchar(20),
   age   Number
 )
 organization external (
   type              oracle_loader
-  default directory ext_dir
+  default directory age_ext
   access parameters (
     records delimited  by newline
     fields  terminated by ','
@@ -56,28 +56,23 @@ organization external (
 reject limit unlimited</value>
 </property>
 <property>
- <name>mapreduce.jdbc.hiho.ftp.ipaddress</name>
- <value>192.168.128.4</value>
+ <name>mapreduce.jdbc.hiho.oracle.ftp.serveraddress</name>
+ <value>192.168.128.2</value>
 </property>
 <property>
- <name>mapreduce.jdbc.hiho.ftp.portnumber</name>
+ <name>mapreduce.jdbc.hiho.oracle.ftp.portnumber</name>
  <value>21</value>
 </property>
 <property>
- <name>mapreduce.jdbc.hiho.ftp.usrname</name>
+ <name>mapreduce.jdbc.hiho.oracle.ftp.username</name>
  <value>nube</value>
 </property>
 <property>
- <name>mapreduce.jdbc.hiho.ftp.password</name>
+ <name>mapreduce.jdbc.hiho.oracle.ftp.password</name>
  <value>nube123</value>
 </property>
 <property>
- <name>mapreduce.jdbc.hiho.ftp.extdir</name>
- <value>/home/nube/ext_dir</value>
+ <name>mapreduce.jdbc.hiho.oracle.ftp.extdir</name>
+ <value>/home/nube/age</value>
 </property>
-<property>
- <name>mapreduce.jdbc.hiho.oracle.externaltable.file</name>
- <value>wordcount</value>
-</property>
-
 </configuration>

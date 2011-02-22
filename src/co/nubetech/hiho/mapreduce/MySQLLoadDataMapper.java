@@ -23,9 +23,9 @@ import java.sql.SQLException;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
 import org.apache.log4j.Logger;
 
+import co.nubetech.apache.hadoop.DBConfiguration;
 import co.nubetech.hiho.common.HIHOConf;
 
 public class MySQLLoadDataMapper extends
@@ -34,10 +34,18 @@ public class MySQLLoadDataMapper extends
 	final static Logger logger = Logger
 			.getLogger(co.nubetech.hiho.mapreduce.MySQLLoadDataMapper.class);
 	private Connection conn;
+	
+	public void setConnection(Connection con) throws IOException{
+		conn=con;
+	}
+	
+	public Connection getConnection(){
+		return conn;
+	}
+	
 
 	protected void setup(Mapper.Context context) throws IOException,
 			InterruptedException {
-
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 
@@ -61,7 +69,8 @@ public class MySQLLoadDataMapper extends
 
 	public void map(NullWritable key, FSDataInputStream val, Context context)
 			throws IOException, InterruptedException {
-
+          
+		conn=getConnection();
 		com.mysql.jdbc.Statement stmt = null;
 		String query;
 		try {
@@ -69,7 +78,7 @@ public class MySQLLoadDataMapper extends
 			stmt = (com.mysql.jdbc.Statement) conn
 					.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
 							ResultSet.CONCUR_UPDATABLE);
-			// stmt.setLocalInfileInputStream(val);
+			stmt.setLocalInfileInputStream(val);
 			query = "load data local infile 'abc.txt' into table ";
 			query += context.getConfiguration().get(HIHOConf.LOAD_QUERY_SUFFIX);
 			// query += "mrTest fields terminated by ','";

@@ -14,6 +14,10 @@
  */
 package co.nubetech.hiho.common.sf;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.AsyncExceptionCode;
 import com.sforce.async.AsyncXmlOutputStream;
@@ -26,10 +30,6 @@ import com.sforce.ws.parser.XmlInputStream;
 import com.sforce.ws.parser.XmlOutputStream;
 import com.sforce.ws.transport.JdkHttpTransport;
 import com.sforce.ws.wsdl.Constants;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class BatchRequest {
 

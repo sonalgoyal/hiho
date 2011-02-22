@@ -16,5 +16,12 @@ package co.nubetech.hiho.common;
 
 public enum OutputStrategyEnum {
 	DELIMITED, DUMP, AVRO, JSON;
+	
+	public static OutputStrategyEnum value(String val) {
+		if (val != null) {
+			return valueOf(val.toUpperCase());
+		}
+		return null;
+	}
 
 }

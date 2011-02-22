@@ -23,10 +23,11 @@ import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
-import org.apache.hadoop.mapreduce.lib.db.DBInputFormat;
-import org.apache.hadoop.mapreduce.lib.db.DataDrivenDBRecordReader;
 import org.apache.log4j.Logger;
+
+import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.apache.hadoop.DBInputFormat;
+import co.nubetech.apache.hadoop.DataDrivenDBRecordReader;
 
 public class DBQueryRecordReader extends
 		DataDrivenDBRecordReader<GenericDBWritable> {

@@ -58,7 +58,7 @@ public class AppendSequenceFileOutputFormat<K, V> extends
 				Path outDir = getOutputPath(job);
 				if (outDir == null) {
 					throw new InvalidJobConfException(
-							"Output directory not set.");
+							"OUTPUT directory not set.");
 				}
 			}
 		}
@@ -79,7 +79,7 @@ public class AppendSequenceFileOutputFormat<K, V> extends
 			if (fileCount > 1)
 				fileCount = fileCount - 1;
 			p1 = new Path(committer.getWorkPath(), getUniqueFile(context,
-					getOutputName(context), extension));
+					"part", extension));
 		}
 		return p1;
 	}
@@ -93,7 +93,7 @@ public class AppendSequenceFileOutputFormat<K, V> extends
 		StringBuilder result = new StringBuilder();
 		result.append(name);
 		result.append('-');
-		result.append(TaskID.getRepresentingCharacter(taskId.getTaskType()));
+		// result.append(taskId.isMap() ? 'm' : 'r');
 		result.append('-');
 		result.append(NUMBER_FORMAT.format(partition));
 		result.append(extension);

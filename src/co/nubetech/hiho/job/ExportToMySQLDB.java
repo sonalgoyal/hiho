@@ -23,12 +23,13 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
+import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.hiho.common.HIHOException;
 import co.nubetech.hiho.mapreduce.MySQLLoadDataMapper;
 import co.nubetech.hiho.mapreduce.lib.input.FileStreamInputFormat;
 
@@ -37,9 +38,52 @@ public class ExportToMySQLDB extends Configured implements Tool {
 	private final static Logger logger = Logger
 			.getLogger(co.nubetech.hiho.job.ExportToMySQLDB.class);
 
+	private String inputPath = null;
+
+	public void populateConfiguration(String[] args, Configuration conf) {
+		for (int i = 0; i < args.length - 1; i++) {
+			if ("-inputPath".equals(args[i])) {
+				inputPath = args[++i];
+			} else if ("-url".equals(args[i])) {
+				conf.set(DBConfiguration.URL_PROPERTY, args[++i]);
+			} else if ("-userName".equals(args[i])) {
+				conf.set(DBConfiguration.USERNAME_PROPERTY, args[++i]);
+			} else if ("-password".equals(args[i])) {
+				conf.set(DBConfiguration.PASSWORD_PROPERTY, args[++i]);
+			}
+		}
+	}
+
+	public void checkMandatoryConfs(Configuration conf) throws HIHOException {
+		if (inputPath == null) {
+			throw new HIHOException(
+					"The provided inputPath is empty, please specify inputPath");
+		}
+		if (conf.get(DBConfiguration.URL_PROPERTY) == null) {
+			throw new HIHOException(
+					"The JDBC URL is not specified, please specify JDBC URL");
+		}
+		if (conf.get(DBConfiguration.USERNAME_PROPERTY) == null) {
+			throw new HIHOException(
+					"The JDBC USERNAME is not specified, please specify JDBC USERNAME");
+		}
+		if (conf.get(DBConfiguration.PASSWORD_PROPERTY) == null) {
+			throw new HIHOException(
+					"The JDBC PASSWORD is not defined, please specify JDBC PASSWORD");
+		}
+	}
+
 	@Override
 	public int run(String[] args) throws IOException {
+
 		Configuration conf = getConf();
+		populateConfiguration(args, conf);
+		try {
+			checkMandatoryConfs(conf);
+		} catch (HIHOException e1) {
+			e1.printStackTrace();
+			throw new IOException(e1);
+		}
 		Job job = new Job(conf);
 		job.setJobName("MySQLBulkLoading");
 		job.setMapperClass(MySQLLoadDataMapper.class);
@@ -55,10 +99,10 @@ public class ExportToMySQLDB extends Configured implements Tool {
 
 		job.setNumReduceTasks(0);
 		job.setInputFormatClass(FileStreamInputFormat.class);
-		FileStreamInputFormat.addInputPath(job, new Path(args[0]));
+		FileStreamInputFormat.addInputPath(job, new Path(inputPath));
 		job.setMapOutputKeyClass(NullWritable.class);
 		job.setMapOutputValueClass(NullWritable.class);
-		//job.setJarByClass(com.mysql.jdbc.Driver.class);
+		// job.setJarByClass(com.mysql.jdbc.Driver.class);
 		job.setOutputFormatClass(NullOutputFormat.class);
 
 		int ret = 0;
