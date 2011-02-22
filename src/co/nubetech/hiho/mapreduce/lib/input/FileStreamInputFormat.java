@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -30,8 +29,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 /**
  * This class returns file streams as records which can be used directly for
- * load data infile operations of databases
- * The key is the filename
+ * load data infile operations of databases The key is the filename
  * 
  * @author sgoyal
  * 

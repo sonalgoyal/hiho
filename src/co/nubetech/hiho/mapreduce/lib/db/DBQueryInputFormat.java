@@ -22,11 +22,14 @@ import java.util.ArrayList;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DefaultStringifier;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.RecordReader;
-import co.nubetech.apache.hadoop.*;
 import org.apache.log4j.Logger;
 
+import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.apache.hadoop.DBInputFormat;
+import co.nubetech.apache.hadoop.DataDrivenDBInputFormat;
 import co.nubetech.hiho.common.HIHOConf;
 
 public class DBQueryInputFormat extends
@@ -35,6 +38,7 @@ public class DBQueryInputFormat extends
 	final static Logger logger = Logger
 			.getLogger(co.nubetech.hiho.mapreduce.lib.db.DBQueryInputFormat.class);
 
+	@Override
 	protected RecordReader<LongWritable, GenericDBWritable> createDBRecordReader(
 			DBInputSplit split, Configuration conf) throws IOException {
 
@@ -50,17 +54,17 @@ public class DBQueryInputFormat extends
 			if (conf.get(HIHOConf.QUERY_PARAMS) != null) {
 				logger.debug("creating stringifier in DBQueryInputFormat");
 				DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
-					conf, ArrayList.class);
+						conf, ArrayList.class);
 				logger.debug("created stringifier");
-			
-				params = stringifier.fromString(conf
-					.get(HIHOConf.QUERY_PARAMS));
+
+				params = stringifier
+						.fromString(conf.get(HIHOConf.QUERY_PARAMS));
 				logger.debug("created params");
 			}
-				// use database product name to determine appropriate record reader.
-				if (dbProductName.startsWith("MYSQL")) {
-					// use MySQL-specific db reader.
-					return new MySQLQueryRecordReader(split, conf, getConnection(),
+			// use database product name to determine appropriate record reader.
+			if (dbProductName.startsWith("MYSQL")) {
+				// use MySQL-specific db reader.
+				return new MySQLQueryRecordReader(split, conf, getConnection(),
 						dbConf, dbConf.getInputConditions(),
 						dbConf.getInputFieldNames(),
 						dbConf.getInputTableName(), params);
@@ -91,9 +95,9 @@ public class DBQueryInputFormat extends
 				conditions, splitBy, fieldNames);
 		if (params != null) {
 			DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
-				job.getConfiguration(), ArrayList.class);
+					job.getConfiguration(), ArrayList.class);
 			job.getConfiguration().set(HIHOConf.QUERY_PARAMS,
-				stringifier.toString(params));
+					stringifier.toString(params));
 			logger.debug("Converted params and saved them into config");
 		}
 		job.setInputFormatClass(DBQueryInputFormat.class);
@@ -108,15 +112,15 @@ public class DBQueryInputFormat extends
 		DBInputFormat.setInput(job, GenericDBWritable.class, inputQuery, "");
 		if (inputBoundingQuery != null) {
 			job.getConfiguration().set(DBConfiguration.INPUT_BOUNDING_QUERY,
-				inputBoundingQuery);
+					inputBoundingQuery);
 		}
 		if (params != null) {
 			DefaultStringifier<ArrayList> stringifier = new DefaultStringifier<ArrayList>(
-				job.getConfiguration(), ArrayList.class);
+					job.getConfiguration(), ArrayList.class);
 			job.getConfiguration().set(HIHOConf.QUERY_PARAMS,
-				stringifier.toString(params));
+					stringifier.toString(params));
 			logger.debug("Converted params and saved them into config");
-		}		
+		}
 		job.setInputFormatClass(DBQueryInputFormat.class);
 	}
 

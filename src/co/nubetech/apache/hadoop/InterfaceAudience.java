@@ -25,23 +25,29 @@ import java.lang.annotation.Documented;
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public class InterfaceAudience {
-  /**
-   * Intended for use by any project or application.
-   */
-  @Documented public @interface Public {};
-  
-  /**
-   * Intended only for the project(s) specified in the annotation.
-   * For example, "Common", "HDFS", "MapReduce", "ZooKeeper", "HBase".
-   */
-  @Documented public @interface LimitedPrivate {
-    String[] value();
-  };
-  
-  /**
-   * Intended for use only within Hadoop itself.
-   */
-  @Documented public @interface Private {};
+	/**
+	 * Intended for use by any project or application.
+	 */
+	@Documented
+	public @interface Public {
+	};
 
-  private InterfaceAudience() {} // Audience can't exist on its own
+	/**
+	 * Intended only for the project(s) specified in the annotation. For
+	 * example, "Common", "HDFS", "MapReduce", "ZooKeeper", "HBase".
+	 */
+	@Documented
+	public @interface LimitedPrivate {
+		String[] value();
+	};
+
+	/**
+	 * Intended for use only within Hadoop itself.
+	 */
+	@Documented
+	public @interface Private {
+	};
+
+	private InterfaceAudience() {
+	} // Audience can't exist on its own
 }

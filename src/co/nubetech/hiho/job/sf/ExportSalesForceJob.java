@@ -19,21 +19,69 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
-
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import co.nubetech.hiho.mapreduce.DelimitedLoadMapper;
+import co.nubetech.hiho.common.HIHOConf;
+import co.nubetech.hiho.common.HIHOException;
 import co.nubetech.hiho.mapreduce.sf.SalesForceLoadMapper;
 
 public class ExportSalesForceJob extends Configured implements Tool {
 
+	private String inputPath = null;
+
+	public void populateConfiguration(String[] args, Configuration conf) {
+		for (int i = 0; i < args.length - 1; i++) {
+			if ("-inputPath".equals(args[i])) {
+				inputPath = args[++i];
+			} else if ("-sfUserName".equals(args[i])) {
+				conf.set(HIHOConf.SALESFORCE_USERNAME, args[++i]);
+			} else if ("-sfPassword".equals(args[i])) {
+				conf.set(HIHOConf.SALESFORCE_PASSWORD, args[++i]);
+			} else if ("-sfObjectType".equals(args[i])) {
+				conf.set(HIHOConf.SALESFORCE_SOBJECTYPE, args[++i]);
+			} else if ("-sfHeaders".equals(args[i])) {
+				conf.set(HIHOConf.SALESFORCE_HEADERS, args[++i]);
+			}
+		}
+	}
+
+	public void checkMandatoryConfs(Configuration conf) throws HIHOException {
+		if (inputPath == null) {
+			throw new HIHOException(
+					"The provided inputPath is empty, please specify inputPath");
+		}
+		if (conf.get(HIHOConf.SALESFORCE_USERNAME) == null) {
+			throw new HIHOException(
+					"The SalesForce UserName is not specified, please specify SalesForce UserName");
+		}
+		if (conf.get(HIHOConf.SALESFORCE_PASSWORD) == null) {
+			throw new HIHOException(
+					"The SalesForce Password is not specified, please specify SalesForce Password");
+		}
+		if (conf.get(HIHOConf.SALESFORCE_SOBJECTYPE) == null) {
+			throw new HIHOException(
+					"The SalesForce SOBJECTYPE is not specified, please specify SalesForce SOBJECTYPE");
+		}
+		if (conf.get(HIHOConf.SALESFORCE_HEADERS) == null) {
+			throw new HIHOException(
+					"The SalesForce Headers is not specified, please specify SalesForce Headers");
+		}
+	}
+
 	@Override
 	public int run(String[] arg0) throws Exception {
 		Configuration conf = getConf();
+		populateConfiguration(arg0, conf);
+		try {
+			checkMandatoryConfs(conf);
+		} catch (HIHOException e1) {
+			e1.printStackTrace();
+			throw new Exception(e1);
+		}
+
 		Job job = new Job(conf);
 		job.setJobName("SaleForceLoading");
 		job.setMapperClass(SalesForceLoadMapper.class);
@@ -41,7 +89,7 @@ public class ExportSalesForceJob extends Configured implements Tool {
 		job.setNumReduceTasks(0);
 
 		job.setInputFormatClass(TextInputFormat.class);
-		TextInputFormat.addInputPath(job, new Path(arg0[0]));
+		TextInputFormat.addInputPath(job, new Path(inputPath));
 		// NLineInputFormat.setNumLinesPerSplit(job, 10);
 
 		job.setMapOutputKeyClass(NullWritable.class);
@@ -61,9 +109,8 @@ public class ExportSalesForceJob extends Configured implements Tool {
 	}
 
 	public static void main(String[] args) throws Exception {
-		@SuppressWarnings("deprecation")
-		int res = ToolRunner.run(new Configuration(), new ExportSalesForceJob(),
-				args);
+		int res = ToolRunner.run(new Configuration(),
+				new ExportSalesForceJob(), args);
 		System.exit(res);
 	}
 

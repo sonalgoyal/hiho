@@ -14,66 +14,71 @@
  */
 package co.nubetech.hiho.mapreduce;
 
-import java.io.*;
-import java.net.*;
-import java.sql.SQLException;
+import java.io.IOException;
 
-import org.apache.commons.net.ftp.*;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.conf.Configured;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.log4j.Logger;
 
-
 import co.nubetech.hiho.common.HIHOConf;
-import co.nubetech.hiho.mapreduce.MySQLLoadDataMapper;
-import co.nubetech.hiho.mapreduce.OracleLoadMapper;
-import co.nubetech.hiho.mapreduce.lib.input.FileStreamInputFormat;
 
 public class OracleLoadMapper extends
 		Mapper<Text, FSDataInputStream, NullWritable, NullWritable> {
 
 	private final static Logger logger = Logger
 			.getLogger(co.nubetech.hiho.mapreduce.OracleLoadMapper.class);
-	
+
 	FTPClient ftpClient;
-	
+	public void setFtpClient(FTPClient ftpClient) {
+		this.ftpClient=ftpClient;
+		
+	}
+	public FTPClient getFtpClient(){
+		return ftpClient;
+	}
+
 	protected void setup(Mapper.Context context) throws IOException,
-		InterruptedException {
+			InterruptedException {
+		
 		String ip = context.getConfiguration().get(HIHOConf.ORACLE_FTP_ADDRESS);
-		String portno = context.getConfiguration().get(HIHOConf.ORACLE_FTP_PORT);
+		String portno = context.getConfiguration()
+				.get(HIHOConf.ORACLE_FTP_PORT);
 		String usr = context.getConfiguration().get(HIHOConf.ORACLE_FTP_USER);
-		String pwd = context.getConfiguration().get(HIHOConf.ORACLE_FTP_PASSWORD);
-		String dir = context.getConfiguration().get(HIHOConf.ORACLE_EXTERNAL_TABLE_DIR);
+		String pwd = context.getConfiguration().get(
+				HIHOConf.ORACLE_FTP_PASSWORD);
+		String dir = context.getConfiguration().get(
+				HIHOConf.ORACLE_EXTERNAL_TABLE_DIR);
 		logger.debug("ip is " + ip);
 		logger.debug("port, usr, password are " + portno + ", " + usr + ", "
 				+ pwd + "," + dir);
+		if (ftpClient==null){
 		ftpClient = new FTPClient();
+		}
+		
 		ftpClient.connect(ip, Integer.parseInt(portno));
 		logger.debug("Found connection");
 		ftpClient.login(usr, pwd);
 		logger.debug("Logged in to remote server");
 		ftpClient.changeWorkingDirectory(dir);
-		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);	
+		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 	}
 
 	public void map(Text key, FSDataInputStream val, Context context)
-		throws IOException, InterruptedException  {
+			throws IOException, InterruptedException {
 		ftpClient.appendFile(key.toString(), val);
 		logger.debug("Appended to file " + key);
-		val.close();		
+		val.close();
 	}
-	
+
 	protected void cleanup(Mapper.Context context) throws IOException,
-		InterruptedException {
+			InterruptedException {
 		if (ftpClient != null) {
-				ftpClient.disconnect();
-				logger.debug("logout from ftp connection");
+			ftpClient.disconnect();
+			logger.debug("logout from ftp connection");
 		}
 	}
 

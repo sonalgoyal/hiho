@@ -1,0 +1,9 @@
+clean
+clean-cache
+compile
+compileTest
+integPackage
+jar
+package
+tar
+veryclean

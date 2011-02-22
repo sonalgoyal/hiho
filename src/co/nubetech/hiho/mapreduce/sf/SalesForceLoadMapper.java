@@ -14,12 +14,9 @@
  */
 package co.nubetech.hiho.mapreduce.sf;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +31,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import co.nubetech.hiho.common.HIHOConf;
-import co.nubetech.hiho.common.HIHOException;
 import co.nubetech.hiho.common.sf.BatchRequest;
 import co.nubetech.hiho.common.sf.SFRestConnection;
 
@@ -46,12 +42,10 @@ import com.sforce.async.ContentType;
 import com.sforce.async.JobInfo;
 import com.sforce.async.JobStateEnum;
 import com.sforce.async.OperationEnum;
-
+import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
 import com.sforce.ws.parser.PullParserException;
-import com.sforce.ws.transport.JdkHttpTransport;
-import com.sforce.soap.partner.PartnerConnection;
 
 public class SalesForceLoadMapper<K, V> extends
 		Mapper<LongWritable, Text, NullWritable, NullWritable> {
@@ -274,7 +268,7 @@ public class SalesForceLoadMapper<K, V> extends
 		return connection;
 	}
 
-	private void checkResults(SFRestConnection connection, JobInfo job,
+	public void checkResults(SFRestConnection connection, JobInfo job,
 			List<BatchInfo> batchInfoList) throws AsyncApiException,
 			IOException {
 		// batchInfoList was populated when batches were created and submitted

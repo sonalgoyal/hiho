@@ -23,8 +23,11 @@ import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
-import co.nubetech.apache.hadoop.*;
 import org.apache.log4j.Logger;
+
+import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.apache.hadoop.DBInputFormat;
+import co.nubetech.apache.hadoop.DataDrivenDBRecordReader;
 
 public class DBQueryRecordReader extends
 		DataDrivenDBRecordReader<GenericDBWritable> {

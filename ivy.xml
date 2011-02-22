@@ -40,29 +40,39 @@
 			<dependency org="org.apache.hadoop" name="hadoop-mapred" rev="${hadoop-mapred.apache.version}"/> 
 			<dependency org="org.apache.hadoop" name="hadoop-mapred-test" rev="${hadoop-mapred.apache.version}"/> -->
 
-		<!-- Dependencies for Apache Hadoop (0.20) 
-		<dependency org="org.apache.hadoop" name="hadoop-core"
-			rev="${hadoop-core.apache20.version}" conf="default->master" />
-		<dependency org="org.apache.hadoop" name="hadoop-hdfs" 
-			rev="${hadoop-hdfs.apache20.version}" conf="default->master"/> 
-		<dependency org="org.apache.hadoop" name="hadoop-mapred" 
-			rev="${hadoop-mapred.apache20.version}" conf="default->master"/-->
-
-		<!-- Dependencies for Apache Hadoop (0.21) <dependency org="org.apache.hadoop" 
-			name="hadoop-common" rev="${hadoop-common.apache21.version}" conf="default->master"/> 
-			<dependency org="org.apache.hadoop" name="hadoop-common-test" rev="${hadoop-common.apache21.version}" 
-			conf="default->master"/> <dependency org="org.apache.hadoop" name="hadoop-hdfs" 
-			rev="${hadoop-hdfs.apache21.version}" conf="default->master"/> <dependency 
-			org="org.apache.hadoop" name="hadoop-hdfs-test" rev="${hadoop-hdfs.apache21.version}" 
+		<!-- Dependencies for Apache Hadoop (0.20) <dependency org="org.apache.hadoop" 
+			name="hadoop-core" rev="${hadoop-core.apache20.version}" conf="default->master" 
+			/> <dependency org="org.apache.hadoop" name="hadoop-hdfs" rev="${hadoop-hdfs.apache20.version}" 
 			conf="default->master"/> <dependency org="org.apache.hadoop" name="hadoop-mapred" 
-			rev="${hadoop-mapred.apache21.version}" conf="default->master"/> <dependency 
-			org="org.apache.hadoop" name="hadoop-mapred-test" rev="${hadoop-mapred.apache21.version}" 
-			conf="default->master"/ -->
-			
+			rev="${hadoop-mapred.apache20.version}" conf="default->master"/ -->
+
+		<!-- Dependencies for Apache Hadoop (0.21) -->
 		<dependency org="org.apache.hadoop" name="hadoop"
-			rev="${hadoop-core.apache20.version}">
-			<artifact name="hadoop" ext="tar.gz"></artifact>
+			rev="${hadoop-core.apache.version}">
+			<artifact name="hadoop" ext="tar.gz" type="dist"></artifact> 
 			</dependency>
+			<!--  
+		<dependency org="org.apache.hadoop" name="hadoop-common-test"
+			rev="${hadoop-common.apache21.version}" conf="default->master" />
+		<dependency org="org.apache.hadoop" name="hadoop-hdfs"
+			rev="${hadoop-hdfs.apache21.version}" conf="default->master" />
+		<dependency org="org.apache.hadoop" name="hadoop-hdfs-test"
+			rev="${hadoop-hdfs.apache21.version}" conf="default->master" />
+		<dependency org="org.apache.hadoop" name="hadoop-mapred"
+			rev="${hadoop-mapred.apache21.version}" conf="default->master" />
+		<dependency org="org.apache.hadoop" name="hadoop-mapred-test"
+		
+			rev="${hadoop-mapred.apache21.version}" conf="default->master" />
+			
+			-->
+	<!-- 
+	<dependency org="org.apache.hadoop" name="hadoop" rev="${hadoop-core.apache20.version}"> 
+			<artifact name="hadoop" ext="tar.gz"></artifact> 
+		</dependency>
+	-->
+		<dependency org="org.apache.hive" name="hive" rev="${hive.version}">
+			<artifact name="hive" ext="tar.gz"></artifact>
+		</dependency>
 
 		<!-- Common dependencies -->
 		<dependency org="commons-logging" name="commons-logging"
@@ -71,7 +81,7 @@
 			conf="default->master" />
 		<dependency org="junit" name="junit" rev="${junit.version}"
 			conf="default->master" />
-		<dependency org="org.apache.hadoop" name="avro" rev="${avro.version}"
+		<dependency org="org.apache.avro" name="avro" rev="${avro.version}"
 			conf="default->master">
 			<exclude module="ant" />
 			<exclude module="jetty" />

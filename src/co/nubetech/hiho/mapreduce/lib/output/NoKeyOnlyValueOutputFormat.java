@@ -32,7 +32,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
- * This class ignores the key and simply prints the value. However, new line is added
+ * This class ignores the key and simply prints the value. However, new line is
+ * added
  * 
  * @author sgoyal
  * 

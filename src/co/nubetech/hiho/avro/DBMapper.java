@@ -17,8 +17,11 @@ package co.nubetech.hiho.avro;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
+import org.apache.avro.mapred.Pair;
 import org.apache.log4j.Logger;
 
 import co.nubetech.hiho.mapreduce.lib.db.ColumnInfo;
@@ -37,7 +40,30 @@ public class DBMapper {
 					+ columnField.toString());
 			fields.add(columnField);
 		}
-		Schema recordSchema = Schema.createRecord(fields);
+		Schema recordSchema = Schema.createRecord("hihoValue", null, null,
+				false);
+		recordSchema.setFields(fields);
+		return recordSchema;
+	}
+
+	public static Schema getPairSchema(ArrayList<ColumnInfo> columnInfo) {
+		Schema pair = Schema.createRecord(Pair.class.getName(), null, null,
+				false);
+		List<Field> fields = new ArrayList<Field>();
+		fields.add(new Field("key", getLongWritableSchema(), "", null));
+		fields.add(new Field("value", getSchema(columnInfo), "", null,
+				Field.Order.IGNORE));
+		pair.setFields(fields);
+		return pair;
+	}
+
+	public static Schema getLongWritableSchema() {
+		Schema recordSchema = Schema.createRecord("hihoKey", null, null, false);
+		Schema.Field columnField = new Schema.Field("offset",
+				Schema.create(Schema.Type.LONG), null, null);
+		ArrayList<Schema.Field> fields = new ArrayList<Schema.Field>();
+		fields.add(columnField);
+		recordSchema.setFields(fields);
 		return recordSchema;
 	}
 

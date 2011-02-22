@@ -14,20 +14,20 @@
  */
 package co.nubetech.hiho.common;
 
-public class HIHOException extends Throwable 
-{
-	
+public class HIHOException extends Throwable {
+
 	private static final long serialVersionUID = 1L;
+
 	public HIHOException() {
-		super();		
+		super();
 	}
-	
+
 	public HIHOException(String s, Throwable e) {
-		super(s, e);		
+		super(s, e);
 	}
-	
+
 	public HIHOException(String s) {
-		super(s);		
+		super(s);
 	}
-	
+
 }

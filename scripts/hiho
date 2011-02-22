@@ -1,0 +1,74 @@
+#!/bin/bash
+
+bin=`dirname "$0"`
+bin=`cd "$bin"; pwd`
+
+if [ -z "$HIHO_HOME" ]; then
+	export HIHO_HOME=${bin}/..
+fi
+
+if [ -z "${HADOOP_HOME}" ]; then
+	HADOOP_HOME=/usr/lib/hadoop
+fi
+  
+if [ ! -d "${HADOOP_HOME}" ]; then
+	echo "Error: $HADOOP_HOME does not exist!"
+        echo 'Please set $HADOOP_HOME to the root of your Hadoop installation.'
+  	exit 1
+fi
+
+COMMAND=$1
+if [ "$COMMAND" = "dedup" ] ; then
+  	CLASS='co.nubetech.hiho.dedup.DedupJob'
+ 	# HADOOP_OPTS="$HADOOP_OPTS $HADOOP_NAMENODE_OPTS"
+fi
+if [ "$COMMAND" = "merge" ] ; then
+	CLASS='co.nubetech.hiho.merge.MergeJob'
+ fi
+if [ "$COMMAND" = "import" ] ; then
+        CLASS='co.nubetech.hiho.job.DBQueryInputJob'
+fi
+if [ "$COMMAND" = "export" ] ; then
+EXPORTTO=$2
+	if [ "$EXPORTTO" = "mysql" ] ; then
+ 	 CLASS='co.nubetech.hiho.job.ExportToMySQLDB'
+	fi
+	if [ "$EXPORTTO" = "ftp" ] ; then
+ 	 CLASS='co.nubetech.hiho.job.ExportToFTPServer'
+	fi
+	if [ "$EXPORTTO" = "oracle" ] ; then
+ 	 CLASS='co.nubetech.hiho.job.ExportToOracleDb'
+	fi
+	if [ "$EXPORTTO" = "saleforce" ] ; then
+ 	 CLASS='co.nubetech.hiho.job.sf.ExportSalesForceJob'
+	fi
+fi
+
+
+
+function add_to_classpath() {
+   dir=$1
+  for f in $dir/*.jar; do
+   CLASSPATH=${CLASSPATH}:$f;
+  done
+  export CLASSPATH
+}
+
+if [ -d "$HIHO_HOME/lib" ]; then
+ add_to_classpath $HIHO_HOME/lib
+fi
+
+add_to_classpath $HIHO_HOME
+
+if [ -d "$HIHO_HOME/build/ivy/lib/hiho" ]; then
+ for f in $HIHO_HOME/build/ivy/lib/hiho/*/*.jar; do
+CLASSPATH=${CLASSPATH}:$f;
+  done
+
+for f in $HIHO_HOME/build/ivy/lib/hiho/default/hive-*/lib/*.jar; do
+ CLASSPATH=${CLASSPATH}:$f;
+  done
+fi
+
+export HADOOP_CLASSPATH="${CLASSPATH}:${HADOOP_CLASSPATH}"
+exec ${HADOOP_HOME}/bin/hadoop $CLASS "$@"

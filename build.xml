@@ -27,7 +27,7 @@
 	<property environment="env" />
 	<property name="name" value="hiho" />
 	<property name="Name" value="HIHO" />
-	<property name="version" value="0.3.0" />
+	<property name="version" value="0.4.0" />
 
 
 	<property name="artifact.name" value="${name}-${version}" />
@@ -49,6 +49,7 @@
 	<property name="dist.dir" location="${build.dir}/${artifact.name}" />
 	<property name="tar.file" location="${build.dir}/${artifact.name}.tar.gz" />
 	<property name="build.docs.timestamp" location="${build.dir}/docs.timestamp" />
+	<property name="integration.dir" location="${basedir}/integ" />
 
 	<!-- compilation -->
 	<property name="javac.deprecation" value="off" />
@@ -56,8 +57,8 @@
 	<property name="build.encoding" value="ISO-8859-1" />
 
 	<!-- controlling the Hadoop source -->
-	<!-- valid values for ${hadoop.dist} are 'apache20' -->
-	<property name="hadoop.dist" value="apache20" />
+	<!-- valid values for ${hadoop.dist} are 'apache', 'apacheTrunk' etc -->
+	<property name="hadoop.dist" value="apache" />
 
 
 
@@ -76,8 +77,9 @@
 
 	<!--this is the naming policy for artifacts we want pulled down-->
 	<property name="ivy.artifact.retrieve.pattern" value="${name}/[conf]/[artifact]-[revision].[ext]" />
-	<property name="hadoop.mirror" value="http://archive.apache.org/dist" />
-
+	<!--property name="hadoop.mirror" value="http://archive.apache.org/dist" /-->
+	<property name="hadoop.mirror" value="http://www.trieuvan.com/apache/" />
+	
 	<!-- load ant-contrib tasks to get the "if" task. -->
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>
@@ -104,6 +106,7 @@
 					<include name="hadoop-common-*.jar" />
 					<include name="hadoop-mapred-*.jar" />
 					<include name="hadoop-hdfs-*.jar" />
+					<include name="*hadoop-*-test.jar" />
 				</fileset>
 				<fileset dir="${hadoop.home}/lib">
 					<include name="*.jar" />
@@ -113,22 +116,22 @@
 		</then>
 		<else>
 			<if>
-				<equals arg1="${hadoop.dist}" arg2="apache20" />
+				<equals arg1="${hadoop.dist}" arg2="apache" />
 				<then>
 					<path id="compile.classpath">
 						<pathelement location="${build.classes}" />
 						<path refid="lib.path" />
-						<fileset dir="${build.ivy.lib.dir}/${name}/default/hadoop-${hadoop-core.apache20.version}">
+						<fileset dir="${build.ivy.lib.dir}/${name}/default/hadoop-${hadoop-core.apache.version}">
 							<include name="*.jar" />
-								</fileset>
-						<fileset dir="${build.ivy.lib.dir}/${name}/default/hadoop-${hadoop-core.apache20.version}/lib">
-											<include name="*.jar" />
-										</fileset>
+						</fileset>
+						<fileset dir="${build.ivy.lib.dir}/${name}/default/hadoop-${hadoop-core.apache.version}/lib">
+							<include name="*.jar" />
+						</fileset>
 						<path refid="${name}.hadoop.classpath" />
 					</path>
-					
+
 				</then>
-				
+
 				<else>
 					<path id="compile.classpath">
 						<pathelement location="${build.classes}" />
@@ -137,200 +140,230 @@
 					</path>
 				</else>
 			</if>
-			
-		</else>
-		</if>
 
-		<!-- "init" target used for setup purposes. -->
-		<target name="init">
-			<!-- The hadoop.dist property determines which version of Hadoop to
+		</else>
+	</if>
+
+	
+	<!-- "init" target used for setup purposes. -->
+	<target name="init">
+		<!-- The hadoop.dist property determines which version of Hadoop to
          retrieve; this may be "apache", or "apache21". But
          multiple of these versions can use the same shim. We set the
          hadoop.shim property here, based on that one.
-    -->
-			<if>
-				<equals arg1="${hadoop.dist}" arg2="apache" />
+    
+		<if>
+			<equals arg1="${hadoop.dist}" arg2="apache" />
+			<then>
+				<property name="hadoop.shim" value="apache" />
+				<echo message="Hadoop distribution: apache -> apache (trunk) " />
+			</then>
+			<elseif>
+				<equals arg1="${hadoop.dist}" arg2="apache21" />
 				<then>
 					<property name="hadoop.shim" value="apache" />
-					<echo message="Hadoop distribution: apache -> apache (trunk) " />
+					<echo message="Hadoop distribution: apache21 -> apache (0.21)" />
 				</then>
-				<elseif>
-					<equals arg1="${hadoop.dist}" arg2="apache21" />
-					<then>
-						<property name="hadoop.shim" value="apache" />
-						<echo message="Hadoop distribution: apache21 -> apache (0.21)" />
-					</then>
-				</elseif>
-				<elseif>
-					<equals arg1="${hadoop.dist}" arg2="apache20" />
-					<then>
-						<property name="hadoop.shim" value="apache20" />
-						<echo message="Hadoop distribution: apache20 -> apache (0.20)" />
-					</then>
-				</elseif>
-				<else>
-					<fail message="Invalid value for hadoop.dist: ${hadoop.dist}" />
-				</else>
-			</if>
-		</target>
-
-		<target name="ivy-retrieve-hadoop" depends="ivy-init,ivy-resolve-hadoop">
-			<if>
-				<equals arg1="${hadoop.dist}" arg2="local" />
+			</elseif>
+			<elseif>
+				<equals arg1="${hadoop.dist}" arg2="apache20" />
 				<then>
-					<!-- Use a local Hadoop distribution. Just retrieve the basic
+					<property name="hadoop.shim" value="apache20" />
+					<echo message="Hadoop distribution: apache20 -> apache (0.20)" />
+				</then>
+			</elseif>
+			<else>
+				<fail message="Invalid value for hadoop.dist: ${hadoop.dist}" />
+			</else>
+		</if>
+		-->
+	</target>
+
+	<target name="ivy-retrieve-hadoop" depends="ivy-init,ivy-resolve-hadoop">
+		<if>
+			<equals arg1="${hadoop.dist}" arg2="local" />
+			<then>
+				<!-- Use a local Hadoop distribution. Just retrieve the basic
 	             'common' configuration, and add the Hadoop jars from
 	             the local Hadoop install.
 	             We can't use a subant here, because the refs wouldn't be
 	             preserved when we return to executing this target. 
 	        -->
-					<ivy:resolve settingsRef="${name}.ivy.settings" />
-					<ivy:retrieve settingsRef="${name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
-					<ivy:cachepath pathid="${name}.hadoop.classpath" />
-				</then>
-				<else>
-					<!-- retrieve hadoop refs normally. -->
-					<ivy:retrieve settingsRef="${name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
-					
-					<!--if hadoop is 0.20, we need to untar -->
-					<if>
-						<equals arg1="${hadoop.dist}" arg2="apache20" />
-						<then>
-							<untar src="${build.dir}/ivy/lib/hiho/default/hadoop-${hadoop-core.apache20.version}.tar.gz" dest="${build.dir}/ivy/lib/hiho/default/" compression="gzip" />
-						</then>
-					</if>
-					<ivy:cachepath pathid="${name}.hadoop.classpath" />
-				</else>
-			</if>
-		</target>
+				<ivy:resolve settingsRef="${name}.ivy.settings" />
+				<ivy:retrieve settingsRef="${name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
+				<ivy:cachepath pathid="${name}.hadoop.classpath" />
+			</then>
+			<else>
+				<!-- retrieve hadoop refs normally. -->
+				<ivy:retrieve settingsRef="${name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
+
+				<!--if hadoop is 0.20, we need to untar -->
+				<if>
+					<equals arg1="${hadoop.dist}" arg2="apache" />
+					<then>
+						<untar src="${build.dir}/ivy/lib/hiho/default/hadoop-${hadoop-core.apache.version}.tar.gz" dest="${build.dir}/ivy/lib/hiho/default/" compression="gzip" />
+					</then>
+				</if>
+				
+				
+				<ivy:cachepath pathid="${name}.hadoop.classpath" />
+			</else>
+		</if>
+	</target>
+	
+
+	<target name="ivy-retrieve-hive" depends="ivy-init,ivy-resolve-hive">
+		<untar src="${build.dir}/ivy/lib/hiho/default/hive-${hive.version}.tar.gz" dest="${build.dir}/ivy/lib/hiho/default/" compression="gzip" />
+		<ivy:cachepath pathid="${name}.hive.classpath" />
+	</target>
 
 
-		<!-- Compile core classes for the project -->
-		<target name="compile" depends="init, ivy-retrieve-hadoop" description="Compile core classes for the project">
-			<!-- ensure normal build target dir exists -->
-			<mkdir dir="${build.classes}" />
-			<echo message="Class path is "/>
-			<echo message="compile.classpath" />
+	<!-- Compile core classes for the project -->
+	<target name="compile" depends="init, ivy-retrieve-hadoop,ivy-retrieve-hive" description="Compile core classes for the project">
+		<!-- ensure normal build target dir exists -->
+		<mkdir dir="${build.classes}" />
+		<echo message="Class path is " />
+		<echo message="compile.classpath" />
 
-			<!-- Compile the main code. -->
-			<javac encoding="${build.encoding}" srcdir="${src.dir}" includes="**/*.java" destdir="${build.classes}" debug="${javac.debug}" deprecation="${javac.deprecation}">
-				<classpath refid="compile.classpath" />
-			</javac>
-		</target>
+		<!-- Compile the main code. -->
+		<javac encoding="${build.encoding}" srcdir="${src.dir}" includes="**/*.java" destdir="${build.classes}" debug="${javac.debug}" deprecation="${javac.deprecation}">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
 
-		<!-- Compile core classes for the project -->
-		<target name="compileTest" depends="init, ivy-retrieve-hadoop,compile" description="Compile test classes for the project">
-			<!-- ensure normal build target dir exists -->
-			<mkdir dir="${build.classes}" />
+	<!-- Compile core classes for the project -->
+	<target name="compileTest" depends="init, ivy-retrieve-hadoop,compile,ivy-retrieve-hive" description="Compile test classes for the project">
+		<!-- ensure normal build target dir exists -->
+		<mkdir dir="${build.classes}" />
 
-			<!-- Compile the main code. -->
-			<javac encoding="${build.encoding}" srcdir="${test.dir}" includes="**/*.java" destdir="${build.classes}" debug="${javac.debug}" deprecation="${javac.deprecation}">
-				<classpath refid="compile.classpath" />
-			</javac>
-		</target>
-
-
-		<target name="jar" depends="compile,compileTest" description="Create main jar">
-			<jar jarfile="${build.dir}/${dest.jar}" basedir="${build.classes}" />
-		</target>
-
-
-		<target name="clean" description="Clean build target files">
-			<delete dir="${build.dir}" />
-		</target>
-
-		<target name="clean-cache" description="Remove cached dependencies">
-			<delete dir="${user.home}/.ivy2/cache/org.apache.hadoop" />
-			<delete file="${ivy.jar}" />
-		</target>
-
-		<target name="veryclean" depends="clean,clean-cache" description="Clean build and remove cached dependencies">
-		</target>
+		<!-- Compile the main code. -->
+		<javac encoding="${build.encoding}" srcdir="${test.dir}" includes="**/*.java" destdir="${build.classes}" debug="${javac.debug}" deprecation="${javac.deprecation}">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
+	
+	<!--target name="test">
+		    <junit fork="yes" haltonfailure="yes">
+		      <classpath refid="test.classpath" />
+		      <formatter type="plain" usefile="false" />
+		      <batchtest>
+		        <fileset dir="${build.classes}/test" includes="**/Test*.class" />
+		      </batchtest>
+		    </junit>
+		  </target>
+	
+	   <target name="jarTest" depends="compile,compileTest" description="Create test jar">
+			<jar jarfile="${build.dir}/${test.jar}" basedir="${build.classes}" />
+		</target-->
 
 
-		<!-- Downloads the ivy jar itself. -->
-		<target name="ivy-download" unless="offline">
-			<mkdir dir="${lib.dir}" />
-			<get src="${ivy_repo_url}" dest="${ivy.jar}" usetimestamp="true" />
-		</target>
 
-		<target name="ivy-init-antlib" depends="ivy-download" unless="ivy.found">
-			<typedef uri="antlib:org.apache.ivy.ant" onerror="fail" loaderRef="ivyLoader">
-				<classpath>
-					<pathelement location="${ivy.jar}" />
-				</classpath>
-			</typedef>
-			<fail>
-				<condition>
-					<not>
-						<typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
-					</not>
-				</condition>
+	<target name="jar" depends="compile,compileTest" description="Create main jar">
+		<jar jarfile="${build.dir}/${dest.jar}" basedir="${build.classes}" />
+	</target>
+
+
+	<target name="clean" description="Clean build target files">
+		<delete dir="${build.dir}" />
+		<delete dir="${integration.dir}"  />
+	</target>
+
+	<target name="clean-cache" description="Remove cached dependencies">
+		<delete dir="${user.home}/.ivy2/cache/org.apache.hadoop" />
+		<delete file="${ivy.jar}" />
+	</target>
+
+	<target name="veryclean" depends="clean,clean-cache" description="Clean build and remove cached dependencies">
+	</target>
+
+
+	<!-- Downloads the ivy jar itself. -->
+	<target name="ivy-download" unless="offline">
+		<mkdir dir="${lib.dir}" />
+		<get src="${ivy_repo_url}" dest="${ivy.jar}" usetimestamp="true" />
+	</target>
+
+	<target name="ivy-init-antlib" depends="ivy-download" unless="ivy.found">
+		<typedef uri="antlib:org.apache.ivy.ant" onerror="fail" loaderRef="ivyLoader">
+			<classpath>
+				<pathelement location="${ivy.jar}" />
+			</classpath>
+		</typedef>
+		<fail>
+			<condition>
+				<not>
+					<typefound uri="antlib:org.apache.ivy.ant" name="cleancache" />
+				</not>
+			</condition>
       You need Apache Ivy 2.0 or later from http://ant.apache.org/
       It could not be loaded from ${ivy_repo_url}
     </fail>
-		</target>
+	</target>
 
-		<target name="ivy-init" depends="ivy-init-antlib" unless="ivy.configured">
-			<ivy:configure settingsid="${name}.ivy.settings" file="${ivysettings.xml}" />
-			<property name="ivy.configured" value="true" />
-		</target>
-
-
-		<!-- retrieve ivy-managed artifacts for the compile configuration -->
-		<target name="ivy-resolve-common" depends="ivy-init">
-			<ivy:resolve settingsRef="${name}.ivy.settings" />
-		</target>
-		<target name="ivy-retrieve-common" depends="ivy-resolve-common">
-			<ivy:retrieve settingsRef="${name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
-			<ivy:cachepath pathid="${name}.common.classpath" />
-		</target>
+	<target name="ivy-init" depends="ivy-init-antlib" unless="ivy.configured">
+		<ivy:configure settingsid="${name}.ivy.settings" file="${ivysettings.xml}" />
+		<property name="ivy.configured" value="true" />
+	</target>
 
 
-
-		<!-- retrieve ivy-managed artifacts from the Hadoop distribution -->
-		<target name="ivy-resolve-hadoop" depends="ivy-init">
-			<ivy:resolve settingsRef="${name}.ivy.settings" />
-		</target>
-
-		<!-- retrieve ivy-managed artifacts for the redist configuration -->
-		<target name="ivy-resolve-redist" depends="ivy-init">
-			<ivy:resolve settingsRef="${name}.ivy.settings" conf="redist" />
-		</target>
-		<target name="ivy-retrieve-redist" depends="ivy-resolve-redist">
-			<ivy:retrieve settingsRef="${name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
-			<ivy:cachepath pathid="${name}.redist.classpath" conf="redist" />
-		</target>
-
-		<target name="package" depends="jar,compile,ivy-retrieve-redist" description="Create a redistributable package">
-
-			<mkdir dir="${dist.dir}" />
-
-			<!-- copy in the build artifact -->
-			<copy todir="${dist.dir}" includeEmptyDirs="false" flatten="true">
-				<fileset dir="${build.dir}">
-					<include name="${dest.jar}" />
-				</fileset>
-			</copy>
+	<!-- retrieve ivy-managed artifacts for the compile configuration -->
+	<target name="ivy-resolve-common" depends="ivy-init">
+		<ivy:resolve settingsRef="${name}.ivy.settings" />
+	</target>
+	<target name="ivy-retrieve-common" depends="ivy-resolve-common">
+		<ivy:retrieve settingsRef="${name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
+		<ivy:cachepath pathid="${name}.common.classpath" />
+	</target>
 
 
 
-			<!-- copy in various components of the initial source layout
+	<!-- retrieve ivy-managed artifacts from the Hadoop distribution -->
+	<target name="ivy-resolve-hadoop" depends="ivy-init">
+		<ivy:resolve settingsRef="${name}.ivy.settings" />
+	</target>
+
+	<target name="ivy-resolve-hive" depends="ivy-init">
+		<ivy:resolve settingsRef="${name}.ivy.settings" />
+	</target>
+
+	<!-- retrieve ivy-managed artifacts for the redist configuration -->
+	<target name="ivy-resolve-redist" depends="ivy-init">
+		<ivy:resolve settingsRef="${name}.ivy.settings" conf="redist" />
+	</target>
+	<target name="ivy-retrieve-redist" depends="ivy-resolve-redist">
+		<ivy:retrieve settingsRef="${name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" sync="true" />
+		<ivy:cachepath pathid="${name}.redist.classpath" conf="redist" />
+	</target>
+
+	<target name="package" depends="jar,compile,ivy-retrieve-redist" description="Create a redistributable package">
+
+		<mkdir dir="${dist.dir}" />
+
+		<!-- copy in the build artifact -->
+		<copy todir="${dist.dir}" includeEmptyDirs="false" flatten="true">
+			<fileset dir="${build.dir}">
+				<include name="${dest.jar}" />
+			</fileset>
+		</copy>
+
+
+
+		<!-- copy in various components of the initial source layout
 	         so that the redistributable can bootstrap itself. -->
-			<copy todir="${dist.dir}" includeEmptyDirs="false" flatten="false">
-				<fileset dir="${basedir}">
-					<include name="**/*" />
-					<exclude name="build/**" />
-					<exclude name="lib/**" />
-					<exclude name="tags" />
-					<exclude name=".project" />
-					<exclude name=".classpath" />
-					<exclude name=".git/**" />
-					<exclude name="ivy/ivy*jar" />
-				</fileset>
-			</copy>
+		<copy todir="${dist.dir}" includeEmptyDirs="false" flatten="false">
+			<fileset dir="${basedir}">
+				<include name="**/*" />
+				<exclude name="build/**" />
+				<exclude name="lib/**" />
+				<exclude name="tags" />
+				<exclude name=".project" />
+				<exclude name=".classpath" />
+				<exclude name=".git/**" />
+				<exclude name="ivy/ivy*jar" />
+			</fileset>
+		</copy>
 
-			<!-- copy the dependency libraries from ivy into the output lib dir 
+		<!-- copy the dependency libraries from ivy into the output lib dir 
 	    <mkdir dir="${dist.dir}/lib"/>
 	    <copy todir="${dist.dir}/lib" includeEmptyDirs="false" flatten="true">
 	      <fileset dir="${redist.ivy.lib.dir}">
@@ -339,32 +372,71 @@
 	    </copy> 
 	    -->
 
-			<copy todir="${dist.dir}/lib" includeEmptyDirs="false">
+		<copy todir="${dist.dir}/lib" includeEmptyDirs="false">
+			<fileset dir="${lib.dir}">
+				<include name="**/*" />
+				<exclude name="ivy*" />
+				<exclude name="ant*" />
+			</fileset>
+		</copy>
+
+
+
+	</target>
+
+	<target name="tar" depends="package" description="Create release tarball">
+		<tar compression="gzip" longfile="gnu" destfile="${tar.file}">
+			<tarfileset dir="${build.dir}" mode="664">
+				<exclude name="${artifact.name}/bin/*" />
+				<exclude name="${artifact.name}/**/*.sh" />
+				<include name="${artifact.name}/**" />
+			</tarfileset>
+			<tarfileset dir="${build.dir}" mode="755">
+				<include name="${artifact.name}/bin/*" />
+				<include name="${artifact.name}/**/*.sh" />
+			</tarfileset>
+		</tar>
+	</target>
+	
+	<target name="integPackage" depends="clean,jar" description="Create a jar with all dependencies bundled in">
+
+			<mkdir dir="${integration.dir}" />
+
+			<!-- copy in the build artifact -->
+			<copy tofile="${integration.dir}/${name}.jar" includeEmptyDirs="false" flatten="true" >
+				<fileset dir="${build.dir}">
+					<include name="${dest.jar}" />
+				</fileset>
+			</copy>
+
+
+
+
+			<!-- copy the dependency libraries from ivy into the output lib dir -->
+		    <mkdir dir="${integration.dir}/lib"/>
+		    <copy todir="${integration.dir}/lib" includeEmptyDirs="false" flatten="true">
+		      <fileset dir="${build.ivy.lib.dir}/${name}/default/">
+		      	<include name="*/*.jar" />
+		      	<include name="hive*/lib/hive*.jar"/>
+		      	<include name="hadoop*/hadoop-*.jar" />		      			      		        
+		      </fileset>
+		    </copy> 
+		    
+
+			<copy todir="${integration.dir}/lib" includeEmptyDirs="false">
 				<fileset dir="${lib.dir}">
 					<include name="**/*" />
 					<exclude name="ivy*" />
 					<exclude name="ant*" />
 				</fileset>
 			</copy>
+		
+			<unjar src="${integration.dir}/${name}.jar" dest="${integration.dir}"/>
+		
+			<jar jarfile="${integration.dir}/${dest.jar}" basedir="${integration.dir}" />
 
-
-
-		</target>
-
-		<target name="tar" depends="package" description="Create release tarball">
-			<tar compression="gzip" longfile="gnu" destfile="${tar.file}">
-				<tarfileset dir="${build.dir}" mode="664">
-					<exclude name="${artifact.name}/bin/*" />
-					<exclude name="${artifact.name}/**/*.sh" />
-					<include name="${artifact.name}/**" />
-				</tarfileset>
-				<tarfileset dir="${build.dir}" mode="755">
-					<include name="${artifact.name}/bin/*" />
-					<include name="${artifact.name}/**/*.sh" />
-				</tarfileset>
-			</tar>
 		</target>
 
 
 
-	</project>
+</project>

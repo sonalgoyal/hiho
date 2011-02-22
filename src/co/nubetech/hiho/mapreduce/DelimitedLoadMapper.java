@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.mapreduce.Mapper;
-import co.nubetech.apache.hadoop.*;
+
+import co.nubetech.apache.hadoop.DBConfiguration;
 import co.nubetech.hiho.mapreduce.lib.db.ColumnInfo;
 import co.nubetech.hiho.mapreduce.lib.db.GenericDBWritable;
 

@@ -18,257 +18,249 @@
 
 package co.nubetech.apache.hadoop;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.conf.Configuration;
-
 /**
- * A RecordReader that reads records from a SQL table.
- * Emits LongWritables containing the record number as 
- * key and DBWritables as value.  
+ * A RecordReader that reads records from a SQL table. Emits LongWritables
+ * containing the record number as key and DBWritables as value.
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public class DBRecordReader<T extends DBWritable> extends
-    RecordReader<LongWritable, T> {
+		RecordReader<LongWritable, T> {
 
-  private static final Log LOG = LogFactory.getLog(DBRecordReader.class);
+	private static final Log LOG = LogFactory.getLog(DBRecordReader.class);
 
-  private ResultSet results = null;
+	private ResultSet results = null;
 
-  private Class<T> inputClass;
+	private Class<T> inputClass;
 
-  private Configuration conf;
+	private Configuration conf;
 
-  private DBInputFormat.DBInputSplit split;
+	private DBInputFormat.DBInputSplit split;
 
-  private long pos = 0;
-  
-  private LongWritable key = null;
-  
-  private T value = null;
+	private long pos = 0;
 
-  private Connection connection;
+	private LongWritable key = null;
 
-  protected PreparedStatement statement;
+	private T value = null;
 
-  private DBConfiguration dbConf;
+	private Connection connection;
 
-  private String conditions;
+	protected PreparedStatement statement;
 
-  private String [] fieldNames;
+	private DBConfiguration dbConf;
 
-  private String tableName;
+	private String conditions;
 
-  /**
-   * @param split The InputSplit to read data for
-   * @throws SQLException 
-   */
-  public DBRecordReader(DBInputFormat.DBInputSplit split, 
-      Class<T> inputClass, Configuration conf, Connection conn, DBConfiguration dbConfig,
-      String cond, String [] fields, String table)
-      throws SQLException {
-    this.inputClass = inputClass;
-    this.split = split;
-    this.conf = conf;
-    this.connection = conn;
-    this.dbConf = dbConfig;
-    this.conditions = cond;
-    this.fieldNames = fields;
-    this.tableName = table;
-  }
+	private String[] fieldNames;
 
-  protected ResultSet executeQuery(String query) throws SQLException {
-    this.statement = connection.prepareStatement(query,
-        ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-    return statement.executeQuery();
-  }
+	private String tableName;
 
-  /** Returns the query for selecting the records, 
-   * subclasses can override this for custom behaviour.*/
-  protected String getSelectQuery() {
-    StringBuilder query = new StringBuilder();
+	/**
+	 * @param split
+	 *            The InputSplit to read data for
+	 * @throws SQLException
+	 */
+	public DBRecordReader(DBInputFormat.DBInputSplit split,
+			Class<T> inputClass, Configuration conf, Connection conn,
+			DBConfiguration dbConfig, String cond, String[] fields, String table)
+			throws SQLException {
+		this.inputClass = inputClass;
+		this.split = split;
+		this.conf = conf;
+		this.connection = conn;
+		this.dbConf = dbConfig;
+		this.conditions = cond;
+		this.fieldNames = fields;
+		this.tableName = table;
+	}
 
-    // Default codepath for MySQL, HSQLDB, etc. Relies on LIMIT/OFFSET for splits.
-    if(dbConf.getInputQuery() == null) {
-      query.append("SELECT ");
-  
-      for (int i = 0; i < fieldNames.length; i++) {
-        query.append(fieldNames[i]);
-        if (i != fieldNames.length -1) {
-          query.append(", ");
-        }
-      }
+	protected ResultSet executeQuery(String query) throws SQLException {
+		this.statement = connection.prepareStatement(query,
+				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		return statement.executeQuery();
+	}
 
-      query.append(" FROM ").append(tableName);
-      query.append(" AS ").append(tableName); //in hsqldb this is necessary
-      if (conditions != null && conditions.length() > 0) {
-        query.append(" WHERE (").append(conditions).append(")");
-      }
+	/**
+	 * Returns the query for selecting the records, subclasses can override this
+	 * for custom behaviour.
+	 */
+	protected String getSelectQuery() {
+		StringBuilder query = new StringBuilder();
 
-      String orderBy = dbConf.getInputOrderBy();
-      if (orderBy != null && orderBy.length() > 0) {
-        query.append(" ORDER BY ").append(orderBy);
-      }
-    } else {
-      //PREBUILT QUERY
-      query.append(dbConf.getInputQuery());
-    }
-        
-    try {
-      query.append(" LIMIT ").append(split.getLength());
-      query.append(" OFFSET ").append(split.getStart());
-    } catch (IOException ex) {
-      // Ignore, will not throw.
-    }		
+		// Default codepath for MySQL, HSQLDB, etc. Relies on LIMIT/OFFSET for
+		// splits.
+		if (dbConf.getInputQuery() == null) {
+			query.append("SELECT ");
 
-    return query.toString();
-  }
+			for (int i = 0; i < fieldNames.length; i++) {
+				query.append(fieldNames[i]);
+				if (i != fieldNames.length - 1) {
+					query.append(", ");
+				}
+			}
 
-  /** {@inheritDoc} */
-  public void close() throws IOException {
-    try {
-      if (null != results) {
-        results.close();
-      }
-      if (null != statement) {
-        statement.close();
-      }
-      if (null != connection) {
-        connection.commit();
-        connection.close();
-      }
-    } catch (SQLException e) {
-      throw new IOException(e.getMessage());
-    }
-  }
+			query.append(" FROM ").append(tableName);
+			query.append(" AS ").append(tableName); // in hsqldb this is
+													// necessary
+			if (conditions != null && conditions.length() > 0) {
+				query.append(" WHERE (").append(conditions).append(")");
+			}
 
-  public void initialize(InputSplit split, TaskAttemptContext context) 
-      throws IOException, InterruptedException {
-    //do nothing
-  }
+			String orderBy = dbConf.getInputOrderBy();
+			if (orderBy != null && orderBy.length() > 0) {
+				query.append(" ORDER BY ").append(orderBy);
+			}
+		} else {
+			// PREBUILT QUERY
+			query.append(dbConf.getInputQuery());
+		}
 
-  /** {@inheritDoc} */
-  public LongWritable getCurrentKey() {
-    return key;  
-  }
+		try {
+			query.append(" LIMIT ").append(split.getLength());
+			query.append(" OFFSET ").append(split.getStart());
+		} catch (IOException ex) {
+			// Ignore, will not throw.
+		}
 
-  /** {@inheritDoc} */
-  public T getCurrentValue() {
-    return value;
-  }
+		return query.toString();
+	}
 
-  /**
-   * @deprecated 
-   */
-  @Deprecated
-  public T createValue() {
-    return ReflectionUtils.newInstance(inputClass, conf);
-  }
+	/** {@inheritDoc} */
+	public void close() throws IOException {
+		try {
+			if (null != results) {
+				results.close();
+			}
+			if (null != statement) {
+				statement.close();
+			}
+			if (null != connection) {
+				connection.commit();
+				connection.close();
+			}
+		} catch (SQLException e) {
+			throw new IOException(e.getMessage());
+		}
+	}
 
-  /**
-   * @deprecated 
-   */
-  @Deprecated
-  public long getPos() throws IOException {
-    return pos;
-  }
+	public void initialize(InputSplit split, TaskAttemptContext context)
+			throws IOException, InterruptedException {
+		// do nothing
+	}
 
-  /**
-   * @deprecated Use {@link #nextKeyValue()}
-   */
-  @Deprecated
-  public boolean next(LongWritable key, T value) throws IOException {
-    this.key = key;
-    this.value = value;
-    return nextKeyValue();
-  }
+	/** {@inheritDoc} */
+	public LongWritable getCurrentKey() {
+		return key;
+	}
 
-  /** {@inheritDoc} */
-  public float getProgress() throws IOException {
-    return pos / (float)split.getLength();
-  }
+	/** {@inheritDoc} */
+	public T getCurrentValue() {
+		return value;
+	}
 
-  /** {@inheritDoc} */
-  public boolean nextKeyValue() throws IOException {
-    try {
-      if (key == null) {
-        key = new LongWritable();
-      }
-      if (value == null) {
-        value = createValue();
-      }
-      if (null == this.results) {
-        // First time into this method, run the query.
-        this.results = executeQuery(getSelectQuery());
-      }
-      if (!results.next())
-        return false;
+	/**
+	 * @deprecated
+	 */
+	@Deprecated
+	public T createValue() {
+		return ReflectionUtils.newInstance(inputClass, conf);
+	}
 
-      // Set the key field value as the output key value
-      key.set(pos + split.getStart());
+	/**
+	 * @deprecated
+	 */
+	@Deprecated
+	public long getPos() throws IOException {
+		return pos;
+	}
 
-      value.readFields(results);
+	/**
+	 * @deprecated Use {@link #nextKeyValue()}
+	 */
+	@Deprecated
+	public boolean next(LongWritable key, T value) throws IOException {
+		this.key = key;
+		this.value = value;
+		return nextKeyValue();
+	}
 
-      pos ++;
-    } catch (SQLException e) {
-      throw new IOException("SQLException in nextKeyValue", e);
-    }
-    return true;
-  }
+	/** {@inheritDoc} */
+	public float getProgress() throws IOException {
+		return pos / (float) split.getLength();
+	}
 
-  protected DBInputFormat.DBInputSplit getSplit() {
-    return split;
-  }
+	/** {@inheritDoc} */
+	public boolean nextKeyValue() throws IOException {
+		try {
+			if (key == null) {
+				key = new LongWritable();
+			}
+			if (value == null) {
+				value = createValue();
+			}
+			if (null == this.results) {
+				// First time into this method, run the query.
+				this.results = executeQuery(getSelectQuery());
+			}
+			if (!results.next())
+				return false;
 
-  protected String [] getFieldNames() {
-    return fieldNames;
-  }
+			// Set the key field value as the output key value
+			key.set(pos + split.getStart());
 
-  protected String getTableName() {
-    return tableName;
-  }
+			value.readFields(results);
 
-  protected String getConditions() {
-    return conditions;
-  }
+			pos++;
+		} catch (SQLException e) {
+			throw new IOException("SQLException in nextKeyValue", e);
+		}
+		return true;
+	}
 
-  protected DBConfiguration getDBConf() {
-    return dbConf;
-  }
+	protected DBInputFormat.DBInputSplit getSplit() {
+		return split;
+	}
 
-  protected Connection getConnection() {
-    return connection;
-  }
+	protected String[] getFieldNames() {
+		return fieldNames;
+	}
 
-  protected PreparedStatement getStatement() {
-    return statement;
-  }
+	protected String getTableName() {
+		return tableName;
+	}
 
-  protected void setStatement(PreparedStatement stmt) {
-    this.statement = stmt;
-  }
+	protected String getConditions() {
+		return conditions;
+	}
+
+	protected DBConfiguration getDBConf() {
+		return dbConf;
+	}
+
+	protected Connection getConnection() {
+		return connection;
+	}
+
+	protected PreparedStatement getStatement() {
+		return statement;
+	}
+
+	protected void setStatement(PreparedStatement stmt) {
+		this.statement = stmt;
+	}
 }

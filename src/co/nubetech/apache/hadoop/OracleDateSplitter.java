@@ -20,22 +20,20 @@ package co.nubetech.apache.hadoop;
 
 import java.util.Date;
 
-
-
 /**
- * Implement DBSplitter over date/time values returned by an Oracle db.
- * Make use of logic from DateSplitter, since this just needs to use
- * some Oracle-specific functions on the formatting end when generating
- * InputSplits.
+ * Implement DBSplitter over date/time values returned by an Oracle db. Make use
+ * of logic from DateSplitter, since this just needs to use some Oracle-specific
+ * functions on the formatting end when generating InputSplits.
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public class OracleDateSplitter extends DateSplitter {
 
-  @SuppressWarnings("unchecked")
-  @Override
-  protected String dateToString(Date d) {
-    // Oracle Data objects are always actually Timestamps
-    return "TO_TIMESTAMP('" + d.toString() + "', 'YYYY-MM-DD HH24:MI:SS.FF')";
-  }
+	@SuppressWarnings("unchecked")
+	@Override
+	protected String dateToString(Date d) {
+		// Oracle Data objects are always actually Timestamps
+		return "TO_TIMESTAMP('" + d.toString()
+				+ "', 'YYYY-MM-DD HH24:MI:SS.FF')";
+	}
 }
