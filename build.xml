@@ -143,6 +143,11 @@
 
 		</else>
 	</if>
+	
+	 <path id="test.classpath">	    
+	 	<pathelement location="${integration.dir}/${dest.jar}" />
+	 	<path refid="compile.classpath" />
+	  </path>
 
 	
 	<!-- "init" target used for setup purposes. -->
@@ -242,19 +247,19 @@
 		</javac>
 	</target>
 	
-	<!--target name="test">
+	<target name="test" depends="compile,compileTest">
 		    <junit fork="yes" haltonfailure="yes">
-		      <classpath refid="test.classpath" />
+		      <classpath refid="test.classpath" >
+		      	</classpath>
 		      <formatter type="plain" usefile="false" />
-		      <batchtest>
+		      <!--batchtest>
 		        <fileset dir="${build.classes}/test" includes="**/Test*.class" />
-		      </batchtest>
+		      </batchtest-->
+		    	<test name="co.nubetech.hiho.job.TestDBQueryInputJob"/>
 		    </junit>
 		  </target>
 	
-	   <target name="jarTest" depends="compile,compileTest" description="Create test jar">
-			<jar jarfile="${build.dir}/${test.jar}" basedir="${build.classes}" />
-		</target-->
+	  
 
 
 

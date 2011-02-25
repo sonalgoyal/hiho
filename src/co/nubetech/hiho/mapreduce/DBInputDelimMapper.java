@@ -43,16 +43,16 @@ public class DBInputDelimMapper extends
 			throws IOException, InterruptedException {
 		StringBuilder builder = new StringBuilder();
 		logger.debug("Received val " + val);
+		String delimiter = context.getConfiguration().get(
+				HIHOConf.INPUT_OUTPUT_DELIMITER);
 		for (Object mapValue : val.getValues()) {
 			builder.append(mapValue);
-			builder.append(context.getConfiguration().get(
-					HIHOConf.INPUT_OUTPUT_DELIMITER));
+			builder.append(delimiter);
 			logger.debug("Building delimited string " + builder);
 		}
 		// above loop will add extra delimiter in the end, deleting that
 		int length = builder.length();
-		if (length > 0)
-			builder.deleteCharAt(length - 1);
+		if (length > 0) builder.delete(length - delimiter.length(), length);
 		outval.set(builder.toString());
 		context.write(outkey, outval);
 	}
