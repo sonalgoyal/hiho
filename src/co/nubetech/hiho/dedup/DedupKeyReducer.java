@@ -31,13 +31,13 @@ public class DedupKeyReducer<K extends Writable, V> extends
 			Context context) throws IOException, InterruptedException {
 		context.getCounter(DedupRecordCounter.OUTPUT).increment(1l);
 		K key = (K) hihoTuple.getKey();
-		logger.debug("Key emitting in reducer is: " + key);
+		logger.debug("Key emitting in DedupKeyReducer is: " + key);
 		// When values is null, emit key and null.
 		if (values.equals(null)) {
 			context.write(key, null);
 		} else {
 			V val = values.iterator().next();
-			logger.debug("Value emitting in reducer is: " + val);
+			logger.debug("Value emitting in DedupKeyReducer is: " + val);
 			context.write(key, val);
 		}
 	}

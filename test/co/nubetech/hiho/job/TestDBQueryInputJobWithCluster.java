@@ -1,8 +1,21 @@
+/**
+ * Copyright 2010 Nube Technologies
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed 
+ * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+ * CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and limitations under the License. 
+ */
 package co.nubetech.hiho.job;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,20 +26,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
-
 import org.apache.log4j.Logger;
+import org.apache.pig.PigServer;
+import org.apache.pig.backend.executionengine.ExecException;
 import org.hsqldb.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import co.nubetech.hiho.common.HIHOException;
 import co.nubetech.hiho.common.HihoTestCase;
 
 public class TestDBQueryInputJobWithCluster extends HihoTestCase {
@@ -88,11 +101,151 @@ public class TestDBQueryInputJobWithCluster extends HihoTestCase {
 			}
 			in.close();
 		}
-		assertEquals(10, count);	
-		
-		
-		
+		assertEquals(10, count);			
 	}
+	
+	//Still to complete
+	@Test
+	public void testBasicAvroTableImport() throws Exception{
+		DBQueryInputJob job = new DBQueryInputJob();
+		
+		String[] args = new String[] {"-jdbcDriver", "org.hsqldb.jdbcDriver", 
+				"-jdbcUrl", "jdbc:hsqldb:hsql://localhost/URLAccess",
+				"-outputPath", "testQueryBasedImport",
+				"-inputQuery", "select url,pageview,commentCount from Pageview, PageComment where Pageview.url = PageComment.url",
+				"-inputBoundingQuery", "select min(commentCount), max(commentCount) from PageComment",
+				"-outputStrategy", "AVRO",
+				"-delimiter", "DELIM",
+				"-numberOfMappers", "2",
+				"-inputOrderBy", "Pageview.pageview"
+		};
+		int res = ToolRunner.run(createJobConf(), job, args); 
+		assertEquals(0, res);
+		//lets verify the result now
+		FileSystem outputFS = getFileSystem();
+		//Path outputPath = getOutputDir();
+		
+		Path outputPath = new Path(outputFS.getHomeDirectory(), "testBasicTableImport");
+		FileStatus[] status = outputFS.listStatus(outputPath, getOutputPathFilter()); 
+		assertTrue(outputFS.exists(outputPath));
+	/*	List<String> expectedOutput = new ArrayList<String>();
+		expectedOutput.add("/aDELIM1000");
+		expectedOutput.add("/bDELIM2000");
+		expectedOutput.add("/cDELIM3000");
+		expectedOutput.add("/dDELIM4000");
+		expectedOutput.add("/eDELIM5000");
+		expectedOutput.add("/fDELIM6000");
+		expectedOutput.add("/gDELIM7000");
+		expectedOutput.add("/hDELIM8000");
+		expectedOutput.add("/iDELIM9000");
+		expectedOutput.add("/jDELIM10000");
+		int count = 0;
+		for (FileStatus fileStat: status) {
+			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			FSDataInputStream in = outputFS.open(fileStat.getPath());
+			String line = null;			
+			while ((line = in.readLine()) != null) {
+				logger.debug("Output is " + line);
+				assertTrue("Matched output " + line , expectedOutput.contains(line));
+				expectedOutput.remove(line);
+				count++;
+			}
+			in.close();
+		}
+		assertEquals(10, count);	*/		
+	}
+	
+	@Test
+	public void testQueryBasedImport() throws Exception{
+		DBQueryInputJob job = new DBQueryInputJob();
+		
+		String[] args = new String[] {"-jdbcDriver", "org.hsqldb.jdbcDriver", 
+				"-jdbcUrl", "jdbc:hsqldb:hsql://localhost/URLAccess",
+				"-outputPath", "testQueryBasedImport",
+				"-inputQuery", "select url,pageview,commentCount from Pageview, PageComment where Pageview.url = PageComment.url",
+				"-inputBoundingQuery", "select min(commentCount), max(commentCount) from PageComment",
+				"-outputStrategy", "delimited",
+				"-delimiter", "DELIM",
+				"-numberOfMappers", "2",
+				"-inputOrderBy", "Pageview.pageview"
+		};
+		int res = ToolRunner.run(createJobConf(), job, args); 
+		assertEquals(0, res);
+		//lets verify the result now
+		FileSystem outputFS = getFileSystem();
+		Path outputPath = new Path(outputFS.getHomeDirectory(), "testQueryBasedImport");
+		FileStatus[] status = outputFS.listStatus(outputPath, getOutputPathFilter()); 
+		assertTrue(outputFS.exists(outputPath));
+		List<String> expectedOutput = new ArrayList<String>();
+		expectedOutput.add("1000");
+		expectedOutput.add("2000");
+		expectedOutput.add("3000");
+		expectedOutput.add("4000");
+		expectedOutput.add("5000");
+		expectedOutput.add("6000");
+		expectedOutput.add("7000");
+		expectedOutput.add("8000");
+		expectedOutput.add("9000");
+		expectedOutput.add("10000");
+		int count = 0;
+		for (FileStatus fileStat: status) {
+			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			FSDataInputStream in = outputFS.open(fileStat.getPath());
+			String line = null;			
+			while ((line = in.readLine()) != null) {
+				logger.debug("Output is " + line);
+				//assertTrue("Matched output " + line , expectedOutput.contains(line));
+				expectedOutput.remove(line);
+				count++;
+			}
+			in.close();
+		}
+		assertEquals(10, count);			
+	}
+
+
+/*	@Test
+	public void testGeneratePigScript() throws Exception, HIHOException {
+		DBQueryInputJob job = new DBQueryInputJob();
+		String[] args = new String[] {
+				"-jdbcDriver",	"org.hsqldb.jdbcDriver",
+				"-jdbcUrl",	"jdbc:hsqldb:hsql://localhost/URLAccess",
+				// "-jdbcUsername", "",
+				// "-jdbcPassword", "",
+				"-inputLoadTo", "pig",
+				"-inputLoadToPath", "/tmp",
+				"-outputPath", "output",
+				"-outputStrategy", "delimited",
+				"-delimiter", ",",
+				"-numberOfMappers", "2",
+				"-inputTableName", "Pageview" , 
+				"-inputOrderBy", "pageview" };
+		int res = ToolRunner.run(createJobConf(), job, args);
+		assertEquals(0, res);
+		// lets verify the result now
+		File pigScript = new File("/tmp/pigScript.txt");			
+		if(!(pigScript.exists())){
+			throw new HIHOException("Unable to generate Pig script");
+		}
+		logger.debug("Pig script output is  " + pigScript.exists());		
+	}
+	
+	
+	@Test
+	public void testContentOfPigScript() throws ExecException, IOException {
+		PigServer pigServer = new PigServer("LOCAL");
+		pigServer.registerScript("/tmp/pigScript.txt");
+		//pigServer.registerQuery("A = LOAD 'mapreduce.jdbc.hiho.input.outputPath' USING PigStorage(',') AS (URL:chararray,PAGEVIEW:long);");
+		pigServer.dumpSchema("A") ;
+		String s;
+        /*InputStream fileWithStdOutContents = new DataInputStream( new BufferedInputStream( new FileInputStream(new File("stdout.redirected"))));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(fileWithStdOutContents));
+        while ((s = reader.readLine()) != null) {
+            assertTrue(s.equals("a: {field1: int,field2: float,field3: chararray}") == true);
+        }
+        reader.close();
+	}*/
+
 
 	private static void startHsqldbServer() {
 		server = new Server();
@@ -144,11 +297,13 @@ public class TestDBQueryInputJobWithCluster extends HihoTestCase {
 	private static void dropTables() {
 		String dropAccess = "DROP TABLE Access";
 		String dropPageview = "DROP TABLE Pageview";
+		String dropPageComment="DROP Table PageComment";
 		Statement st = null;
 		try {
 			st = connection.createStatement();
 			st.executeUpdate(dropAccess);
 			st.executeUpdate(dropPageview);
+			st.executeUpdate(dropPageComment);
 			connection.commit();
 			st.close();
 		} catch (SQLException ex) {
@@ -171,11 +326,16 @@ public class TestDBQueryInputJobWithCluster extends HihoTestCase {
 		String createPageview = "CREATE TABLE "
 				+ "Pageview(url      VARCHAR(100) NOT NULL,"
 				+ " pageview     BIGINT NOT NULL, " + " PRIMARY KEY (url))";
+		
+		String createPageComment = "CREATE TABLE "
+			+ "PageComment(url      VARCHAR(100) NOT NULL,"
+			+ " commentCount     BIGINT NOT NULL, " + " PRIMARY KEY (url))";
 
 		Statement st = connection.createStatement();
 		try {
 			st.executeUpdate(createAccess);
 			st.executeUpdate(createPageview);
+			st.executeUpdate(createPageComment);
 			connection.commit();
 		} finally {
 			st.close();
@@ -246,6 +406,18 @@ public class TestDBQueryInputJobWithCluster extends HihoTestCase {
 				i++;
 				statement1.execute();
 			}
+			
+			PreparedStatement statement2 = connection
+			.prepareStatement("INSERT INTO PageComment(url, commentCount)"
+				+ " VALUES (?, ?)");
+		
+		int j = 1;
+		for (String page: pages) {
+			statement2.setString(1, page);
+			statement2.setInt(2, 10*j);
+			i++;
+			statement2.execute();
+		}
 
 			connection.commit();
 

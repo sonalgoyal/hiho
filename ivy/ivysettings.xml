@@ -47,6 +47,11 @@
 				pattern="${hadoop.mirror}/hive/[artifact]-[revision]/[artifact]-[revision].tar.gz" />
 		</url>
 		
+		<url name="pig-resolver">
+			<artifact
+				pattern="${hadoop.mirror}/pig/[artifact]/[revision]/[artifact]-[revision].jar" />
+		</url>
+		
 		<url name="avro-resolver">
 			<artifact
 				pattern="${hadoop.mirror}/avro/[artifact]-[revision]/java/[artifact]-[revision].jar" />
@@ -63,6 +68,7 @@
 			changingPattern=".*SNAPSHOT">
 			<resolver ref="hadoop-resolver" />
 			<resolver ref="hive-resolver" />
+			<resolver ref="pig-resolver" />
 			<resolver ref="avro-resolver" />
 			<resolver ref="apache-snapshot" />
 			<resolver ref="maven2" />
@@ -71,6 +77,7 @@
 		<chain name="internal" dual="true">
 			<resolver ref="hadoop-resolver" />
 			<resolver ref="hive-resolver" />
+			<resolver ref="pig-resolver" />
 			<resolver ref="avro-resolver" />
 			<resolver ref="fs" />
 			<resolver ref="apache-snapshot" />

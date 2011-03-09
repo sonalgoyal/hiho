@@ -38,5 +38,6 @@
 	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/hsqldb-1.8.0.10.jar"/>
 	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/commons-cli-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/avro-1.4.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Pig0.7"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

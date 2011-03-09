@@ -24,18 +24,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import org.apache.avro.Schema;
-import org.apache.avro.Schema.Field;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.AvroJob;
-import org.apache.avro.mapred.AvroOutputFormat;
 import org.apache.avro.mapred.AvroValue;
-import org.apache.avro.mapred.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -82,6 +77,10 @@ public class DBQueryInputJob extends Configured implements Tool {
 				conf.set(DBConfiguration.USERNAME_PROPERTY, args[++i]);
 			} else if ("-jdbcPassword".equals(args[i])) {
 				conf.set(DBConfiguration.PASSWORD_PROPERTY, args[++i]);
+			} else if ("-inputQuery".equals(args[i])) {
+				conf.set(DBConfiguration.INPUT_QUERY, args[++i]);
+			} else if ("-inputBoundingQuery".equals(args[i])) {
+				conf.set(DBConfiguration.INPUT_BOUNDING_QUERY, args[++i]);
 			} else if ("-outputPath".equals(args[i])) {
 				conf.set(HIHOConf.INPUT_OUTPUT_PATH, args[++i]);
 			} else if ("-outputStrategy".equals(args[i])) {
@@ -131,14 +130,16 @@ public class DBQueryInputJob extends Configured implements Tool {
 			throw new HIHOException(
 					"JDBC url path configuration is empty,please specify JDBC url path");
 		}
-		/*if (conf.get(DBConfiguration.USERNAME_PROPERTY) == null) {
-			throw new HIHOException(
-					"JDBC user name configuration is empty,please specify JDBC user name");
+		if (!conf.get(DBConfiguration.DRIVER_CLASS_PROPERTY).contains("hsqldb")) {
+			if (conf.get(DBConfiguration.USERNAME_PROPERTY) == null) {
+				throw new HIHOException(
+						"JDBC user name configuration is empty,please specify JDBC user name");
+			}
+			if (conf.get(DBConfiguration.PASSWORD_PROPERTY) == null) {
+				throw new HIHOException(
+						"JDBC password configuration is empty,please specify JDBC password");
+			}
 		}
-		if (conf.get(DBConfiguration.PASSWORD_PROPERTY) == null) {
-			throw new HIHOException(
-					"JDBC password configuration is empty,please specify JDBC password");
-		}*/
 		if (conf.get(HIHOConf.INPUT_OUTPUT_PATH) == null) {
 			throw new HIHOException(
 					"Output path is not specified,please specify output path");
@@ -155,6 +156,11 @@ public class DBQueryInputJob extends Configured implements Tool {
 				&& conf.get(DBConfiguration.INPUT_QUERY) == null) {
 			throw new HIHOException(
 					"Input table name and input query both configurations are empty, please specify anyone of them");
+		}
+		if (conf.get(DBConfiguration.INPUT_QUERY) != null
+				&& conf.get(DBConfiguration.INPUT_BOUNDING_QUERY) == null) {
+			throw new HIHOException(
+					"Please specify input bounding query as it is mandatory to be defined with input query ");
 		}
 		if (conf.get(DBConfiguration.INPUT_TABLE_NAME_PROPERTY) != null
 				&& conf.get(DBConfiguration.INPUT_FIELD_NAMES_PROPERTY) == null) {
@@ -282,7 +288,7 @@ public class DBQueryInputJob extends Configured implements Tool {
 				HiveUtility.createTable(conf, job, getDBWritable(conf),
 						jobCounter);
 			} catch (Exception h) {
-				throw new HIHOException("Unable to generate Pig script", h);
+				throw new HIHOException("Unable to generate Hive script", h);
 			}
 		}
 
@@ -411,56 +417,52 @@ public class DBQueryInputJob extends Configured implements Tool {
 	public static String getSelectQuery(Configuration conf, String dbProductName)
 			throws HIHOException {
 
-			StringBuilder query = new StringBuilder();
-			DBConfiguration dbConf = new DBConfiguration(conf);
-			String[] fieldNames = dbConf.getInputFieldNames();
-			String tableName = dbConf.getInputTableName();
-			String conditions = dbConf.getInputConditions();
-			StringBuilder conditionClauses = new StringBuilder();
+		StringBuilder query = new StringBuilder();
+		DBConfiguration dbConf = new DBConfiguration(conf);
+		String[] fieldNames = dbConf.getInputFieldNames();
+		String tableName = dbConf.getInputTableName();
+		String conditions = dbConf.getInputConditions();
+		StringBuilder conditionClauses = new StringBuilder();
 
+		if (dbConf.getInputQuery() == null) {
+			// We need to generate the entire query.
+			query.append("SELECT ");
 
-			if (dbConf.getInputQuery() == null) {
-				// We need to generate the entire query.
-				query.append("SELECT ");
-
-				for (int i = 0; i < fieldNames.length; i++) {
-					query.append(fieldNames[i]);
-					if (i != fieldNames.length - 1) {
-						query.append(", ");
-					}
+			for (int i = 0; i < fieldNames.length; i++) {
+				query.append(fieldNames[i]);
+				if (i != fieldNames.length - 1) {
+					query.append(", ");
 				}
-
-				query.append(" FROM ").append(tableName);
-				if (!dbProductName.startsWith("ORACLE")) {
-					// Seems to be necessary for hsqldb? Oracle explicitly does
-					// *not*
-					// use this clause.
-					query.append(" AS ").append(tableName);
-				}
-				
-
-			} else {
-				// User provided the query. We replace the special token with our
-				// WHERE clause.
-				String inputQuery = dbConf.getInputQuery();
-				if (inputQuery.indexOf(DataDrivenDBInputFormat.SUBSTITUTE_TOKEN) == -1) {
-					logger.error("Could not find the clause substitution token "
-							+ DataDrivenDBInputFormat.SUBSTITUTE_TOKEN
-							+ " in the query: [" + inputQuery
-							+ "]. Parallel splits may not work correctly.");
-				}
-				//bad bad hack, but we dont have the split here..
-				conditionClauses.append("( 1=1 )");
-
-				query.append(inputQuery.replace(
-						DataDrivenDBInputFormat.SUBSTITUTE_TOKEN,
-						conditionClauses.toString()));
 			}
 
-			
+			query.append(" FROM ").append(tableName);
+			if (!dbProductName.startsWith("ORACLE")) {
+				// Seems to be necessary for hsqldb? Oracle explicitly does
+				// *not*
+				// use this clause.
+				query.append(" AS ").append(tableName);
+			}
 
-			return query.toString();
-		
+		} else {
+			// User provided the query. We replace the special token with our
+			// WHERE clause.
+			String inputQuery = dbConf.getInputQuery();
+			if (inputQuery.indexOf(DataDrivenDBInputFormat.SUBSTITUTE_TOKEN) == -1) {
+				logger.error("Could not find the clause substitution token "
+						+ DataDrivenDBInputFormat.SUBSTITUTE_TOKEN
+						+ " in the query: [" + inputQuery
+						+ "]. Parallel splits may not work correctly.");
+			}
+			// bad bad hack, but we dont have the split here..
+			conditionClauses.append("( 1=1 )");
+
+			query.append(inputQuery.replace(
+					DataDrivenDBInputFormat.SUBSTITUTE_TOKEN,
+					conditionClauses.toString()));
+		}
+
+		return query.toString();
+
 	}
 
 	public void populateHiveConfigurationForMultiplePartition(Configuration conf)
@@ -668,34 +670,38 @@ public class DBQueryInputJob extends Configured implements Tool {
 			logger.debug("Set the params");
 
 			JobConf jobConf = new JobConf(conf);
-			
 
 			try {
 				GenericDBWritable queryWritable = getDBWritable(jobConf);
-				Schema pair = DBMapper.getPairSchema(queryWritable.getColumns());
-				
-			AvroJob.setMapOutputSchema(jobConf, pair);
-			GenericRecordAvroOutputFormat.setOutputPath(jobConf,
-					new Path(getConf().get(HIHOConf.INPUT_OUTPUT_PATH)));		
+				Schema pair = DBMapper
+						.getPairSchema(queryWritable.getColumns());
 
-			co.nubetech.apache.hadoop.mapred.DBQueryInputFormat.setInput(
-					jobConf, inputQuery, inputBoundingQuery, params);
-			jobConf.setInputFormat(co.nubetech.apache.hadoop.mapred.DBQueryInputFormat.class);
-			jobConf.setMapperClass(DBInputAvroMapper.class);
-			jobConf.setMapOutputKeyClass(NullWritable.class);
-			jobConf.setMapOutputValueClass(AvroValue.class);
-			jobConf.setOutputKeyClass(NullWritable.class);
-			jobConf.setOutputValueClass(Text.class);
-			jobConf.setOutputFormat(GenericRecordAvroOutputFormat.class);
-			jobConf.setJarByClass(DBQueryInputJob.class);
-			jobConf.setStrings("io.serializations", 
-					"org.apache.hadoop.io.serializer.JavaSerialization,org.apache.hadoop.io.serializer.WritableSerialization,org.apache.avro.mapred.AvroSerialization");
-			jobConf.setNumReduceTasks(0);
-			/*jobConf.setOutputFormat(org.apache.hadoop.mapred.SequenceFileOutputFormat.class);
-			org.apache.hadoop.mapred.SequenceFileOutputFormat.setOutputPath(jobConf,
-					new Path(getConf().get(HIHOConf.INPUT_OUTPUT_PATH)));	
-			*/
-			JobClient.runJob(jobConf);
+				AvroJob.setMapOutputSchema(jobConf, pair);
+				GenericRecordAvroOutputFormat.setOutputPath(jobConf, new Path(
+						getConf().get(HIHOConf.INPUT_OUTPUT_PATH)));
+
+				co.nubetech.apache.hadoop.mapred.DBQueryInputFormat.setInput(
+						jobConf, inputQuery, inputBoundingQuery, params);
+				jobConf.setInputFormat(co.nubetech.apache.hadoop.mapred.DBQueryInputFormat.class);
+				jobConf.setMapperClass(DBInputAvroMapper.class);
+				jobConf.setMapOutputKeyClass(NullWritable.class);
+				jobConf.setMapOutputValueClass(AvroValue.class);
+				jobConf.setOutputKeyClass(NullWritable.class);
+				jobConf.setOutputValueClass(Text.class);
+				jobConf.setOutputFormat(GenericRecordAvroOutputFormat.class);
+				jobConf.setJarByClass(DBQueryInputJob.class);
+				jobConf.setStrings(
+						"io.serializations",
+						"org.apache.hadoop.io.serializer.JavaSerialization,org.apache.hadoop.io.serializer.WritableSerialization,org.apache.avro.mapred.AvroSerialization");
+				jobConf.setNumReduceTasks(0);
+				/*
+				 * jobConf.setOutputFormat(org.apache.hadoop.mapred.
+				 * SequenceFileOutputFormat.class);
+				 * org.apache.hadoop.mapred.SequenceFileOutputFormat
+				 * .setOutputPath(jobConf, new
+				 * Path(getConf().get(HIHOConf.INPUT_OUTPUT_PATH)));
+				 */
+				JobClient.runJob(jobConf);
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}

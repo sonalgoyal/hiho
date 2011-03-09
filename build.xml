@@ -49,7 +49,7 @@
 	<property name="dist.dir" location="${build.dir}/${artifact.name}" />
 	<property name="tar.file" location="${build.dir}/${artifact.name}.tar.gz" />
 	<property name="build.docs.timestamp" location="${build.dir}/docs.timestamp" />
-	<property name="integration.dir" location="${basedir}/integ" />
+	<property name="integration.dir" location="${basedir}/deploy" />
 
 	<!-- compilation -->
 	<property name="javac.deprecation" value="off" />
@@ -143,11 +143,6 @@
 
 		</else>
 	</if>
-	
-	 <path id="test.classpath">	    
-	 	<pathelement location="${integration.dir}/${dest.jar}" />
-	 	<path refid="compile.classpath" />
-	  </path>
 
 	
 	<!-- "init" target used for setup purposes. -->
@@ -220,11 +215,11 @@
 	<target name="ivy-retrieve-hive" depends="ivy-init,ivy-resolve-hive">
 		<untar src="${build.dir}/ivy/lib/hiho/default/hive-${hive.version}.tar.gz" dest="${build.dir}/ivy/lib/hiho/default/" compression="gzip" />
 		<ivy:cachepath pathid="${name}.hive.classpath" />
-	</target>
-
+	</target>	
+	
 
 	<!-- Compile core classes for the project -->
-	<target name="compile" depends="init, ivy-retrieve-hadoop,ivy-retrieve-hive" description="Compile core classes for the project">
+	<target name="compile" depends="init, ivy-retrieve-hadoop,ivy-retrieve-hive,ivy-resolve-pig" description="Compile core classes for the project">
 		<!-- ensure normal build target dir exists -->
 		<mkdir dir="${build.classes}" />
 		<echo message="Class path is " />
@@ -237,7 +232,7 @@
 	</target>
 
 	<!-- Compile core classes for the project -->
-	<target name="compileTest" depends="init, ivy-retrieve-hadoop,compile,ivy-retrieve-hive" description="Compile test classes for the project">
+	<target name="compileTest" depends="init, ivy-retrieve-hadoop,compile,ivy-retrieve-hive,ivy-resolve-pig" description="Compile test classes for the project">
 		<!-- ensure normal build target dir exists -->
 		<mkdir dir="${build.classes}" />
 
@@ -247,19 +242,19 @@
 		</javac>
 	</target>
 	
-	<target name="test" depends="compile,compileTest">
+	<!--target name="test">
 		    <junit fork="yes" haltonfailure="yes">
-		      <classpath refid="test.classpath" >
-		      	</classpath>
+		      <classpath refid="test.classpath" />
 		      <formatter type="plain" usefile="false" />
-		      <!--batchtest>
+		      <batchtest>
 		        <fileset dir="${build.classes}/test" includes="**/Test*.class" />
-		      </batchtest-->
-		    	<test name="co.nubetech.hiho.job.TestDBQueryInputJob"/>
+		      </batchtest>
 		    </junit>
 		  </target>
 	
-	  
+	   <target name="jarTest" depends="compile,compileTest" description="Create test jar">
+			<jar jarfile="${build.dir}/${test.jar}" basedir="${build.classes}" />
+		</target-->
 
 
 
@@ -329,6 +324,10 @@
 
 	<target name="ivy-resolve-hive" depends="ivy-init">
 		<ivy:resolve settingsRef="${name}.ivy.settings" />
+	</target>
+	
+	<target name="ivy-resolve-pig" depends="ivy-init">
+			<ivy:resolve settingsRef="${name}.ivy.settings" />
 	</target>
 
 	<!-- retrieve ivy-managed artifacts for the redist configuration -->
@@ -403,7 +402,7 @@
 		</tar>
 	</target>
 	
-	<target name="integPackage" depends="clean,jar" description="Create a jar with all dependencies bundled in">
+	<target name="deploy" depends="clean,jar" description="Create a jar with all dependencies bundled in">
 
 			<mkdir dir="${integration.dir}" />
 
@@ -423,7 +422,6 @@
 		      <fileset dir="${build.ivy.lib.dir}/${name}/default/">
 		      	<include name="*/*.jar" />
 		      	<include name="hive*/lib/hive*.jar"/>
-		      	<include name="hadoop*/hadoop-*.jar" />		      			      		        
 		      </fileset>
 		    </copy> 
 		    
@@ -431,13 +429,14 @@
 			<copy todir="${integration.dir}/lib" includeEmptyDirs="false">
 				<fileset dir="${lib.dir}">
 					<include name="**/*" />
+					<exclude name="hadoop*" />
 					<exclude name="ivy*" />
 					<exclude name="ant*" />
 				</fileset>
 			</copy>
 		
 			<unjar src="${integration.dir}/${name}.jar" dest="${integration.dir}"/>
-		
+			<delete file="${integration.dir}/${name}.jar"/>
 			<jar jarfile="${integration.dir}/${dest.jar}" basedir="${integration.dir}" />
 
 		</target>

@@ -22,14 +22,16 @@ import java.sql.SQLException;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import co.nubetech.apache.hadoop.DBConfiguration;
 import co.nubetech.hiho.common.HIHOConf;
+import co.nubetech.hiho.common.HIHOException;
 
 public class MySQLLoadDataMapper extends
-		Mapper<NullWritable, FSDataInputStream, NullWritable, NullWritable> {
+		Mapper<Text, FSDataInputStream, NullWritable, NullWritable> {
 
 	final static Logger logger = Logger
 			.getLogger(co.nubetech.hiho.mapreduce.MySQLLoadDataMapper.class);
@@ -67,7 +69,7 @@ public class MySQLLoadDataMapper extends
 
 	}
 
-	public void map(NullWritable key, FSDataInputStream val, Context context)
+	public void map(Text key, FSDataInputStream val, Context context)
 			throws IOException, InterruptedException {
           
 		conn=getConnection();
@@ -87,6 +89,7 @@ public class MySQLLoadDataMapper extends
 		} catch (Exception e) {
 			e.printStackTrace();
 			stmt = null;
+			throw new IOException(e);
 		} finally {
 			try {
 				if (stmt != null) {

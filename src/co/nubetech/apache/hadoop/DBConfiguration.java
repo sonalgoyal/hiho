@@ -23,7 +23,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import org.apache.hadoop.conf.Configuration;
-
 import org.apache.hadoop.mapreduce.Job;
 
 import co.nubetech.apache.hadoop.DBInputFormat.NullDBWritable;

@@ -31,17 +31,29 @@ import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
 
 public class TestExportToOracleDb {
+	
+	private String createExternalTable="create table age(  i   Number,  n   Varchar(20)," +
+			"  a   Number)organization external (  type  oracle_loader default directory" +
+			" ext_dir access parameters (records delimited  by newlinefields  terminated" +
+			" by ','missing field values are null )location  (/home/nube/:file.txt) reject' limit unlimited";
 
 	@Test
 	public void testTableCorrect() throws HIHOException {
-		String query = "create table age(  i   Number,  n   Varchar(20),  a   Number)organization external (  type  oracle_loader default directory ext_dir access parameters (records delimited  by newlinefields  terminated by ','missing field values are null )location  (/home/nube/:file.txt) reject' limit unlimited;";
+		String query = "create table age(  i   Number,  n   Varchar(20)," +
+				"  a   Number)organization external (  type  oracle_loader " +
+				"default directory ext_dir access parameters (records delimited" +
+				"  by newlinefields  terminated by ','missing field values are null )location " +
+				" (/home/nube/:file.txt) reject' limit unlimited;";
 		assertEquals("age", ExportToOracleDb.getTableName(query));
 
 	}
 
 	@Test
 	public void testTableWithSpaceCorrect() throws HIHOException {
-		String query = "create table age (  i   Number,  n   Varchar(20),  a   Number)organization external (  type oracle_loader  default directory ext_dir access parameters (records delimited  by newlinefields  terminated by ','missing field values are null )location  (/home/nube/:file.txt) reject' limit unlimited;";
+		String query = "create table age (  i   Number,  n   Varchar(20)," +
+				"  a   Number)organization external (  type oracle_loader  default directory" +
+				" ext_dir access parameters (records delimited  by newlinefields  terminated " +
+				"by ','missing field values are null )location  (/home/nube/:file.txt) reject' limit unlimited;";
 		assertEquals("age", ExportToOracleDb.getTableName(query));
 
 	}
@@ -86,13 +98,14 @@ public class TestExportToOracleDb {
 
 	@Test
 	public void testPopulateConfiguration() {
+		
 		String[] args = new String[] { "-inputPath", "input",
 				"-oracleFtpAddress", "192.168.128.2", "-oracleFtpPortNumber",
 				"21", "-oracleFtpUserName", "nube", "-oracleFtpPassword",
 				"nube123", "-oracleExternalTableDirectory", "home/nube/age",
 				"-driver", "oracle.jdbc.driver.OracleDriver", "-url",
 				"jdbc:oracle:thin:@192.168.128.2:1521:nube", "-userName",
-				"system", "-password", "nube" };
+				"system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 
 		Configuration conf = new Configuration();
@@ -110,6 +123,7 @@ public class TestExportToOracleDb {
 				conf.get(DBConfiguration.URL_PROPERTY));
 		assertEquals("system", conf.get(DBConfiguration.USERNAME_PROPERTY));
 		assertEquals("nube", conf.get(DBConfiguration.PASSWORD_PROPERTY));
+		assertEquals(createExternalTable, conf.get(HIHOConf.EXTERNAL_TABLE_DML));
 	}
 
 	@Test
@@ -120,7 +134,7 @@ public class TestExportToOracleDb {
 				"nube123", "-oracleExternalTableDirectory", "home/nube/age",
 				"-driver", "oracle.jdbc.driver.OracleDriver", "-url",
 				"jdbc:oracle:thin:@192.168.128.2:1521:nube", "-userName",
-				"system", "-password", "nube" };
+				"system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -135,7 +149,7 @@ public class TestExportToOracleDb {
 				"-oracleExternalTableDirectory", "home/nube/age", "-driver",
 				"oracle.jdbc.driver.OracleDriver", "-url",
 				"jdbc:oracle:thin:@192.168.128.2:1521:nube", "-userName",
-				"system", "-password", "nube" };
+				"system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -151,7 +165,7 @@ public class TestExportToOracleDb {
 				"-oracleExternalTableDirectory", "home/nube/age", "-driver",
 				"oracle.jdbc.driver.OracleDriver", "-url",
 				"jdbc:oracle:thin:@192.168.128.2:1521:nube", "-userName",
-				"system", "-password", "nube" };
+				"system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -167,7 +181,7 @@ public class TestExportToOracleDb {
 				"-oracleExternalTableDirectory", "home/nube/age", "-driver",
 				"oracle.jdbc.driver.OracleDriver", "-url",
 				"jdbc:oracle:thin:@192.168.128.2:1521:nube", "-userName",
-				"system", "-password", "nube" };
+				"system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -183,7 +197,7 @@ public class TestExportToOracleDb {
 				"-oracleExternalTableDirectory", "home/nube/age", "-driver",
 				"oracle.jdbc.driver.OracleDriver", "-url",
 				"jdbc:oracle:thin:@192.168.128.2:1521:nube", "-userName",
-				"system", "-password", "nube" };
+				"system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -199,7 +213,7 @@ public class TestExportToOracleDb {
 				"-oracleExternalTableDirectory", "home/nube/age", "-driver",
 				"oracle.jdbc.driver.OracleDriver", "-url",
 				"jdbc:oracle:thin:@192.168.128.2:1521:nube", "-userName",
-				"system", "-password", "nube" };
+				"system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -215,7 +229,7 @@ public class TestExportToOracleDb {
 				"nubeabc", "-oracleExternalTableDirectory", "-driver",
 				"oracle.jdbc.driver.OracleDriver", "-url",
 				"jdbc:oracle:thin:@192.168.128.2:1521:nube", "-userName",
-				"system", "-password", "nube" };
+				"system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -229,7 +243,7 @@ public class TestExportToOracleDb {
 				"-oracleFtpUserName", "abc123", "-oracleFtpPassword",
 				"nubeabc", "-oracleExternalTableDirectory", "/a/b/c ",
 				"-driver", "-url", "jdbc:oracle:thin:@192.168.128.2:1521:nube",
-				"-userName", "system", "-password", "nube" };
+				"-userName", "system", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -243,7 +257,7 @@ public class TestExportToOracleDb {
 				"-oracleFtpUserName", "abc123", "-oracleFtpPassword",
 				"nubeabc", "-oracleExternalTableDirectory", "/a/b/c ",
 				"-driver", "oracle:jdbc:driver", "-url", "-userName", "system",
-				"-password", "nube" };
+				"-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -257,7 +271,7 @@ public class TestExportToOracleDb {
 				"-oracleFtpUserName", "abc123", "-oracleFtpPassword",
 				"nubeabc", "-oracleExternalTableDirectory", "/a/b/c ",
 				"-driver", "oracle:jdbc:driver", "-url", "jdbc:oracle",
-				"-userName", "-password", "nube" };
+				"-userName", "-password", "nube", "-externalTable",createExternalTable };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);
@@ -271,7 +285,21 @@ public class TestExportToOracleDb {
 				"-oracleFtpUserName", "abc123", "-oracleFtpPassword",
 				"nubeabc", "-oracleExternalTableDirectory", "/a/b/c ",
 				"-driver", "oracle:jdbc:driver", "-url", "jdbc:oracle",
-				"-userName", "abc", "-password" };
+				"-userName", "abc", "-password", "-externalTable",createExternalTable };
+		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
+		Configuration conf = new Configuration();
+		exportToOracleDb.populateConfiguration(args, conf);
+		exportToOracleDb.checkMandatoryConfs(conf);
+	}
+	
+	@Test(expected = HIHOException.class)
+	public void testCheckMandatoryConfsForCreateExternalTableQuery() throws HIHOException {
+		String[] args = new String[] { "-inputPath", "inputpath",
+				"-oracleFtpAddress", "address", "-oracleFtpPortNumber", "21",
+				"-oracleFtpUserName", "abc123", "-oracleFtpPassword",
+				"nubeabc", "-oracleExternalTableDirectory", "/a/b/c ",
+				"-driver", "oracle:jdbc:driver", "-url", "jdbc:oracle",
+				"-userName", "abc", "-password","passwd", "-externalTable" };
 		ExportToOracleDb exportToOracleDb = new ExportToOracleDb();
 		Configuration conf = new Configuration();
 		exportToOracleDb.populateConfiguration(args, conf);

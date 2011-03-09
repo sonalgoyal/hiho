@@ -1,10 +1,10 @@
 #!/bin/bash
 
-bin=`dirname "$0"`
-bin=`cd "$bin"; pwd`
+scripts=`dirname "$0"`
+scripts=`cd "$bin"; pwd`
 
 if [ -z "$HIHO_HOME" ]; then
-	export HIHO_HOME=${bin}/..
+	export HIHO_HOME=${scripts}/..
 fi
 
 if [ -z "${HADOOP_HOME}" ]; then
@@ -44,31 +44,4 @@ EXPORTTO=$2
 	fi
 fi
 
-
-
-function add_to_classpath() {
-   dir=$1
-  for f in $dir/*.jar; do
-   CLASSPATH=${CLASSPATH}:$f;
-  done
-  export CLASSPATH
-}
-
-if [ -d "$HIHO_HOME/lib" ]; then
- add_to_classpath $HIHO_HOME/lib
-fi
-
-add_to_classpath $HIHO_HOME
-
-if [ -d "$HIHO_HOME/build/ivy/lib/hiho" ]; then
- for f in $HIHO_HOME/build/ivy/lib/hiho/*/*.jar; do
-CLASSPATH=${CLASSPATH}:$f;
-  done
-
-for f in $HIHO_HOME/build/ivy/lib/hiho/default/hive-*/lib/*.jar; do
- CLASSPATH=${CLASSPATH}:$f;
-  done
-fi
-
-export HADOOP_CLASSPATH="${CLASSPATH}:${HADOOP_CLASSPATH}"
-exec ${HADOOP_HOME}/bin/hadoop $CLASS "$@"
+exec ${HADOOP_HOME}/bin/hadoop jar ${HIHO_HOME}/deploy/hiho*.jar $CLASS "$@"

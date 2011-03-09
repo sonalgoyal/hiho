@@ -67,6 +67,8 @@ public class ExportToOracleDb extends Configured implements Tool {
 				conf.set(DBConfiguration.USERNAME_PROPERTY, args[++i]);
 			} else if ("-password".equals(args[i])) {
 				conf.set(DBConfiguration.PASSWORD_PROPERTY, args[++i]);
+			} else if ("-externalTable".equals(args[i])) {
+				conf.set(HIHOConf.EXTERNAL_TABLE_DML, args[++i]);
 			}
 		}
 	}
@@ -111,7 +113,12 @@ public class ExportToOracleDb extends Configured implements Tool {
 		if (conf.get(DBConfiguration.PASSWORD_PROPERTY) == null) {
 			throw new HIHOException(
 					"The JDBC PASSWORD is not specified, please specify JDBC PASSWORD");
+		} 
+		if (conf.get(HIHOConf.EXTERNAL_TABLE_DML) == null) {
+			throw new HIHOException(
+					"The query to create external table is not specified, please specify the create query for external table");
 		}
+		
 	}
 
 	@Override

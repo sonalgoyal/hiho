@@ -41,6 +41,43 @@ public class DedupJob extends Configured implements Tool {
 	private String outputFormat = null;
 	private String delimiter = ",";
 	private int column = 1;
+	
+	private long totalRecordsRead;
+	private long badRecords;
+	private long output;
+	private long duplicateRecords;
+
+	public long getTotalRecordsRead() {
+		return totalRecordsRead;
+	}
+
+	public void setTotalRecordsRead(long totalRecordsRead) {
+		this.totalRecordsRead = totalRecordsRead;
+	}
+
+	public long getBadRecords() {
+		return badRecords;
+	}
+
+	public void setBadRecords(long badRecords) {
+		this.badRecords = badRecords;
+	}
+
+	public long getOutput() {
+		return output;
+	}
+
+	public void setOutput(long output) {
+		this.output = output;
+	}
+
+	public long getDuplicateRecords() {
+		return duplicateRecords;
+	}
+
+	public void setDuplicateRecords(long duplicateRecords) {
+		this.duplicateRecords = duplicateRecords;
+	}
 
 	public void populateConfiguration(String[] args) {
 		for (int i = 0; i < args.length - 1; i++) {
@@ -169,17 +206,18 @@ public class DedupJob extends Configured implements Tool {
 			job.waitForCompletion(false);
 			if (job.isComplete()) {
 				Counters counters = job.getCounters();
-				long totalRecordsRead = counters.findCounter(
+				totalRecordsRead = counters.findCounter(
 						DedupRecordCounter.TOTAL_RECORDS_READ).getValue();
-				long badRecords = counters.findCounter(
+				badRecords = counters.findCounter(
 						DedupRecordCounter.BAD_RECORD).getValue();
-				long output = counters.findCounter(DedupRecordCounter.OUTPUT)
+				output = counters.findCounter(DedupRecordCounter.OUTPUT)
 						.getValue();
+				duplicateRecords = totalRecordsRead - output;
 				logger.info("Total records read are: " + totalRecordsRead);
 				logger.info("Bad Records are: " + badRecords);
 				logger.info("Output records are: " + output);
 				logger.info("Duplicate records are: "
-						+ (totalRecordsRead - output));
+						+ duplicateRecords);
 			}
 
 		} catch (Exception e) {

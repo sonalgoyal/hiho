@@ -29,6 +29,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
 import co.nubetech.hiho.mapreduce.MySQLLoadDataMapper;
 import co.nubetech.hiho.mapreduce.lib.input.FileStreamInputFormat;
@@ -50,6 +51,8 @@ public class ExportToMySQLDB extends Configured implements Tool {
 				conf.set(DBConfiguration.USERNAME_PROPERTY, args[++i]);
 			} else if ("-password".equals(args[i])) {
 				conf.set(DBConfiguration.PASSWORD_PROPERTY, args[++i]);
+			} else if ("-querySuffix".equals(args[i])) {
+				conf.set(HIHOConf.LOAD_QUERY_SUFFIX, args[++i]);
 			}
 		}
 	}
@@ -70,6 +73,10 @@ public class ExportToMySQLDB extends Configured implements Tool {
 		if (conf.get(DBConfiguration.PASSWORD_PROPERTY) == null) {
 			throw new HIHOException(
 					"The JDBC PASSWORD is not defined, please specify JDBC PASSWORD");
+		}
+		if (conf.get(HIHOConf.LOAD_QUERY_SUFFIX) == null) {
+			throw new HIHOException(
+					"The Suffix for query is not defined, please specify suffix");
 		}
 	}
 

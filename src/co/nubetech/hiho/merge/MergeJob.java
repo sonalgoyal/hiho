@@ -34,7 +34,7 @@ import co.nubetech.hiho.dedup.HihoTuple;
 public class MergeJob extends Configured implements Tool {
 
 	final static Logger logger = Logger
-			.getLogger(co.nubetech.hiho.dedup.DedupJob.class);
+			.getLogger(co.nubetech.hiho.merge.MergeJob.class);
 
 	private String oldPath = null;
 	private String newPath = null;
@@ -46,6 +46,43 @@ public class MergeJob extends Configured implements Tool {
 	private String inputValueClassName = null;
 	private String outputPath = null;
 	private String outputFormat = null;
+
+	private long output;
+	private long badRecords;
+	private long totalRecordsNew;
+	private long totalRecordsOld;
+	
+	public long getOutput() {
+		return output;
+	}
+
+	public void setOutput(long output) {
+		this.output = output;
+	}
+
+	public long getBadRecords() {
+		return badRecords;
+	}
+
+	public void setBadRecords(long badRecords) {
+		this.badRecords = badRecords;
+	}
+
+	public long getTotalRecordsNew() {
+		return totalRecordsNew;
+	}
+
+	public void setTotalRecordsNew(long totalRecordsNew) {
+		this.totalRecordsNew = totalRecordsNew;
+	}
+
+	public long getTotalRecordsOld() {
+		return totalRecordsOld;
+	}
+
+	public void setTotalRecordsOld(long totalRecordsOld) {
+		this.totalRecordsOld = totalRecordsOld;
+	}
 
 	public void populateConfiguration(String[] args) {
 		for (int i = 0; i < args.length - 1; i++) {
@@ -80,6 +117,8 @@ public class MergeJob extends Configured implements Tool {
 				delimiter = args[++i];
 			} else if ("-column".equals(args[i])) {
 				column = Integer.parseInt(args[++i]);
+			}else if ("-outputFormat".equals(args[i])) {
+				outputFormat = args[++i];
 			}
 		}
 	}
@@ -177,13 +216,13 @@ public class MergeJob extends Configured implements Tool {
 			job.waitForCompletion(false);
 			if (job.isComplete()) {
 				Counters counters = job.getCounters();
-				long totalRecordsOld = counters.findCounter(
+				totalRecordsOld = counters.findCounter(
 						MergeRecordCounter.TOTAL_RECORDS_OLD).getValue();
-				long totalRecordsNew = counters.findCounter(
+				totalRecordsNew = counters.findCounter(
 						MergeRecordCounter.TOTAL_RECORDS_NEW).getValue();
-				long badRecords = counters.findCounter(
-						MergeRecordCounter.TOTAL_RECORDS_NEW).getValue();
-				long output = counters.findCounter(MergeRecordCounter.OUTPUT)
+				badRecords = counters.findCounter(
+						MergeRecordCounter.BAD_RECORD).getValue();
+				output = counters.findCounter(MergeRecordCounter.OUTPUT)
 						.getValue();
 				logger.info("Total old records read are: " + totalRecordsOld);
 				logger.info("Total new records read are: " + totalRecordsNew);

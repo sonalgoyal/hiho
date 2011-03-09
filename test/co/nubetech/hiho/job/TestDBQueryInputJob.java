@@ -40,7 +40,8 @@ public class TestDBQueryInputJob {
 				"hive", "-hivePassword", "hive", "-hivePartitionBy",
 				"country:string:india", "-hiveIfNotExists", "true",
 				"-hiveTableName", "table", "-hiveSortedBy", "id",
-				"-hiveClusteredBy", "country:2" };
+				"-hiveClusteredBy", "country:2","-inputQuery","select * from student",
+				"-inputBoundingQuery","select min(id), max(id) from student"};
 
 		new DBQueryInputJob().populateConfiguration(args, conf);
 		assertEquals("com.mysql.jdbc.Driver",
@@ -73,7 +74,9 @@ public class TestDBQueryInputJob {
 		assertEquals("table", conf.get(HIHOConf.HIVE_TABLE_NAME));
 		assertEquals("id", conf.get(HIHOConf.HIVE_SORTED_BY));
 		assertEquals("country:2", conf.get(HIHOConf.HIVE_CLUSTERED_BY));
-
+		assertEquals("select * from student", conf.get(DBConfiguration.INPUT_QUERY));
+		assertEquals("select min(id), max(id) from student",
+				conf.get(DBConfiguration.INPUT_BOUNDING_QUERY));
 	}
 
 	@Test
@@ -216,6 +219,7 @@ public class TestDBQueryInputJob {
 		conf.set(HIHOConf.INPUT_OUTPUT_STRATEGY, "DELIMITED");
 		// conf.set(HIHOConf.INPUT_OUTPUT_DELIMITER, "value");
 		conf.set(DBConfiguration.INPUT_QUERY, "value");
+		conf.set(DBConfiguration.INPUT_BOUNDING_QUERY, "value");
 		conf.set(DBConfiguration.INPUT_TABLE_NAME_PROPERTY, "value");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO, "hive");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO_PATH, "value");
@@ -261,6 +265,7 @@ public class TestDBQueryInputJob {
 		conf.set(HIHOConf.INPUT_OUTPUT_STRATEGY, "DELIMITED");
 		conf.set(HIHOConf.INPUT_OUTPUT_DELIMITER, "value");
 		conf.set(DBConfiguration.INPUT_QUERY, "value");
+		conf.set(DBConfiguration.INPUT_BOUNDING_QUERY, "value");
 		conf.set(DBConfiguration.INPUT_TABLE_NAME_PROPERTY, "value");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO, "hive");
 		// conf.set(HIHOConf.INPUT_OUTPUT_LOADTO_PATH, "value");
@@ -283,6 +288,7 @@ public class TestDBQueryInputJob {
 		conf.set(HIHOConf.INPUT_OUTPUT_STRATEGY, "DELIMITED");
 		conf.set(HIHOConf.INPUT_OUTPUT_DELIMITER, "value");
 		conf.set(DBConfiguration.INPUT_QUERY, "value");
+		conf.set(DBConfiguration.INPUT_BOUNDING_QUERY, "value");
 		conf.set(DBConfiguration.INPUT_TABLE_NAME_PROPERTY, "value");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO, "hive");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO_PATH, "value");
@@ -305,6 +311,7 @@ public class TestDBQueryInputJob {
 		conf.set(HIHOConf.INPUT_OUTPUT_STRATEGY, "DELIMITED");
 		conf.set(HIHOConf.INPUT_OUTPUT_DELIMITER, "value");
 		conf.set(DBConfiguration.INPUT_QUERY, "value");
+		conf.set(DBConfiguration.INPUT_BOUNDING_QUERY, "value");
 		conf.set(DBConfiguration.INPUT_TABLE_NAME_PROPERTY, "value");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO, "hive");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO_PATH, "value");
@@ -327,6 +334,7 @@ public class TestDBQueryInputJob {
 		conf.set(HIHOConf.INPUT_OUTPUT_STRATEGY, "DELIMITED");
 		conf.set(HIHOConf.INPUT_OUTPUT_DELIMITER, "value");
 		conf.set(DBConfiguration.INPUT_QUERY, "value");
+		conf.set(DBConfiguration.INPUT_BOUNDING_QUERY, "value");
 		conf.set(DBConfiguration.INPUT_TABLE_NAME_PROPERTY, "value");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO, "hive");
 		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO_PATH, "value");
@@ -334,6 +342,29 @@ public class TestDBQueryInputJob {
 		conf.set(HIHOConf.HIVE_URL, "value");
 		conf.set(HIHOConf.HIVE_PARTITION_BY, "value:value:us,india");
 		// conf.set(HIHOConf.HIVE_TABLE_NAME, "value");
+		new DBQueryInputJob().checkMandatoryConfs(conf);
+	}
+	
+	@Test(expected = HIHOException.class)
+	public void testCheckMandatoryConfsForInputBoundingQuery()
+			throws HIHOException {
+		Configuration conf = new Configuration();
+		conf.set(DBConfiguration.DRIVER_CLASS_PROPERTY, "value");
+		conf.set(DBConfiguration.URL_PROPERTY, "value");
+		conf.set(DBConfiguration.USERNAME_PROPERTY, "value");
+		conf.set(DBConfiguration.PASSWORD_PROPERTY, "value");
+		conf.set(HIHOConf.INPUT_OUTPUT_PATH, "value");
+		conf.set(HIHOConf.INPUT_OUTPUT_STRATEGY, "DELIMITED");
+		conf.set(HIHOConf.INPUT_OUTPUT_DELIMITER, "value");
+		conf.set(DBConfiguration.INPUT_QUERY, "value");
+	//	conf.set(DBConfiguration.INPUT_BOUNDING_QUERY, "value");
+		conf.set(DBConfiguration.INPUT_TABLE_NAME_PROPERTY, "value");
+		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO, "hive");
+		conf.set(HIHOConf.INPUT_OUTPUT_LOADTO_PATH, "value");
+		conf.set(HIHOConf.HIVE_DRIVER, "value");
+		conf.set(HIHOConf.HIVE_URL, "value");
+		conf.set(HIHOConf.HIVE_PARTITION_BY, "value:value:us,india");
+		conf.set(HIHOConf.HIVE_TABLE_NAME, "value");
 		new DBQueryInputJob().checkMandatoryConfs(conf);
 	}
 }

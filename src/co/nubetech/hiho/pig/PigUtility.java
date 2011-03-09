@@ -19,6 +19,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
+import org.apache.pig.backend.executionengine.ExecException;
 
 import co.nubetech.hiho.common.HIHOException;
 import co.nubetech.hiho.mapreduce.lib.db.ColumnInfo;

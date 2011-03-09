@@ -73,6 +73,10 @@
 		<dependency org="org.apache.hive" name="hive" rev="${hive.version}">
 			<artifact name="hive" ext="tar.gz"></artifact>
 		</dependency>
+		
+		<dependency org="org.apache.pig" name="pig" rev="${pig.version}">
+			<artifact name="pig" ext="jar"></artifact>
+		</dependency>
 
 		<!-- Common dependencies -->
 		<dependency org="commons-logging" name="commons-logging"

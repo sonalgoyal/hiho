@@ -36,6 +36,7 @@ public class DedupKeyMapper<K extends Writable, V> extends
 		context.getCounter(DedupRecordCounter.TOTAL_RECORDS_READ).increment(1l);
 		HihoTuple<K> hihoTuple = new HihoTuple<K>();
 		hihoTuple.setKey(key);
+		logger.debug("Value emitting in DedupKeyMapper is: " + val);
 		context.write(hihoTuple, val);
 	}
 

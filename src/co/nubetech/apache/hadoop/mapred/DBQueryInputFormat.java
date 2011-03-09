@@ -24,12 +24,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DefaultStringifier;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.lib.db.DBConfiguration;
+import org.apache.hadoop.mapred.lib.db.DBInputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.log4j.Logger;
-
-import org.apache.hadoop.mapred.lib.db.DBConfiguration;
-import org.apache.hadoop.mapred.lib.db.DBInputFormat;
 
 import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.mapreduce.lib.db.GenericDBWritable;

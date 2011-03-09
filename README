@@ -8,12 +8,12 @@ HIHO Features:
 Join multiple tables, provide where conditions, dynamically bind parameters to SQL queries to get data to Hadoop. As simple as creating a simple config and running the job.
 bin/hadoop jar hiho.jar co.nubetech.hiho.job.DBQueryInputJob -conf dbInputQueryDelimited.xml
   or
- ${HIHO_HOME}/scripts/hiho import -jdbcDriver <jdbcDriver> -jdbcUrl <jdbcUrl> -jdbcUsername <jdbcUsername> -jdbcPassword <jdbcPassword> -outputPath <outputPath> -outputStrategy <outputStrategy> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -inputOrderBy <inputOrderBy> -conf dbInputQueryDelimited.xml
+ ${HIHO_HOME}/scripts/hiho import -jdbcDriver <jdbcDriver> -jdbcUrl <jdbcUrl> -jdbcUsername <jdbcUsername> -jdbcPassword <jdbcPassword> -inputQuery <inputQuery> -inputBoundingQuery <inputBoundingQuery> -outputPath <outputPath> -outputStrategy <outputStrategy> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -inputOrderBy <inputOrderBy> 
  
 - table based import
 bin/hadoop jar hiho.jar co.nubetech.hiho.job.DBQueryInputJob -conf dbInputTableDelimited.xml
   or 
- ${HIHO_HOME}/scripts/hiho import -jdbcDriver <jdbcDriver> -jdbcUrl <jdbcUrl> -jdbcUsername <jdbcUsername> -jdbcPassword <jdbcPassword> -outputPath <outputPath> -outputStrategy <outputStrategy> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -inputOrderBy <inputOrderBy> -inputTableName <inputTableName> -inputFieldNames <inputFieldNames> -conf dbInputTableDelimited.xml
+ ${HIHO_HOME}/scripts/hiho import -jdbcDriver <jdbcDriver> -jdbcUrl <jdbcUrl> -jdbcUsername <jdbcUsername> -jdbcPassword <jdbcPassword> -outputPath <outputPath> -outputStrategy <outputStrategy> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -inputOrderBy <inputOrderBy> -inputTableName <inputTableName> -inputFieldNames <inputFieldNames>
 - incremental import by appending to existing HDFS location so that all data is in one place.
 just specify isAppend = true in the configurations and import. Import will be written to existing HDFS folder.
 
@@ -22,14 +22,14 @@ By specifying the mapreduce.jdbc.hiho.input.outputStrategy as DELIMITED or AVRO.
 
 2. Export to Databases
 - high performance MySQL loading using LOAD DATA INFILE
-${HIHO_HOME}/scripts/hiho export mysql  -conf mysqlExport.xml -inputPath <inputPath> -url <url> -userName <userName> -password <password>
+${HIHO_HOME}/scripts/hiho export mysql  -inputPath <inputPath> -url <url> -userName <userName> -password <password> -querySuffix  <querySuffix>
 
 - high performance Oracle loading by creating external tables. See expert opinion http://asktom.oracle.com/pls/asktom/f?p=100:11:0::::P11_QUESTION_ID:6611962171229
 For information on external tables, check http://download.oracle.com/docs/cd/B12037_01/server.101/b10825/et_concepts.htm
 On the Oracle server, you will have to make a folder, create a directory through the Oracle Client(sqlplus) and grant privileges to that. Also allow ftp to the Oracle server
 mkdir -p ageTest
 sqlplus>create or replace directory age_ext as '/home/nube/age';
-${HIHO_HOME}/scripts/hiho export oracle -conf oracleExport.xml -inputPath <inputPath> -oracleFtpAddress <oracleFtpAddress> -oracleFtpPortNumber <oracleFtpPortNumber> -oracleFtpUserName <oracleFtpUserName> -oracleFtpPassword <oracleFtpPassword> -oracleExternalTableDirectory <oracleExternalTableDirectory> -driver <driver> -url <url> -userName <userName> -password <password>
+${HIHO_HOME}/scripts/hiho export oracle -inputPath <inputPath> -oracleFtpAddress <oracleFtpAddress> -oracleFtpPortNumber <oracleFtpPortNumber> -oracleFtpUserName <oracleFtpUserName> -oracleFtpPassword <oracleFtpPassword> -oracleExternalTableDirectory <oracleExternalTableDirectory> -driver <driver> -url <url> -userName <userName> -password <password> -externalTable <createExternalTableQuery>
 
 - custom loading and export to any database by emitting own GenericDBWritables. Check DelimitedLoadMapper
 
@@ -86,12 +86,12 @@ Hive export can be done in two method query base and table based
  For table based
  bin/hadoop jar ~/workspace/hiho/build/classes/hiho.jar co.nubetech.hiho.job.DBQueryInputJob -conf  ~/workspace/hiho/conf/dbInputTableDelimitedHive.xml
   or
-${HIHO_HOME}/scripts/hiho import -jdbcDriver <jdbcDriver> -jdbcUrl <jdbcUrl> -jdbcUsername <jdbcUsername> -jdbcPassword <jdbcPassword> -outputPath <outputPath> -outputStrategy <outputStrategy> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -inputOrderBy <inputOrderBy> -inputTableName <inputTableName> -inputFieldNames <inputFieldNames> -inputLoadTo hive -inputLoadToPath <inputLoadToPath> -hiveDriver <hiveDriver>  -hiveUrl <hiveUrl> -hiveUsername <hiveUsername> -hivePassword <hivePassword> -hivePartitionBy <hivePartitionBy> -hiveIfNotExists <hiveIfNotExists> -hiveTableName <hiveTableName> -hiveSortedBy <hiveSortedBy> -hiveClusteredBy <hiveClusteredBy> -conf dbInputTableDelimitedHive.xml
+${HIHO_HOME}/scripts/hiho import -jdbcDriver <jdbcDriver> -jdbcUrl <jdbcUrl> -jdbcUsername <jdbcUsername> -jdbcPassword <jdbcPassword> -outputPath <outputPath> -outputStrategy <outputStrategy> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -inputOrderBy <inputOrderBy> -inputTableName <inputTableName> -inputFieldNames <inputFieldNames> -inputLoadTo hive -inputLoadToPath <inputLoadToPath> -hiveDriver <hiveDriver>  -hiveUrl <hiveUrl> -hiveUsername <hiveUsername> -hivePassword <hivePassword> -hivePartitionBy <hivePartitionBy> -hiveIfNotExists <hiveIfNotExists> -hiveTableName <hiveTableName> -hiveSortedBy <hiveSortedBy> -hiveClusteredBy <hiveClusteredBy> 
  
  For query based
  bin/hadoop jar ~/workspace/hiho/build/classes/hiho.jar co.nubetech.hiho.job.DBQueryInputJob -conf  ~/workspace/hiho/conf/dbInputQueryDelimitedHive.xml
   or
-  ${HIHO_HOME}/scripts/hiho import -jdbcDriver <jdbcDriver> -jdbcUrl <jdbcUrl> -jdbcUsername <jdbcUsername> -jdbcPassword <jdbcPassword> -outputPath <outputPath> -outputStrategy <outputStrategy> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -inputOrderBy <inputOrderBy> -inputLoadTo hive -inputLoadToPath <inputLoadToPath> -hiveDriver <hiveDriver>  -hiveUrl <hiveUrl> -hiveUsername <hiveUsername> -hivePassword <hivePassword> -hivePartitionBy <hivePartitionBy> -hiveIfNotExists <hiveIfNotExists> -hiveTableName <hiveTableName> -hiveSortedBy <hiveSortedBy> -hiveClusteredBy <hiveClusteredBy> -conf dbInputQueryDelimitedHive.xml
+  ${HIHO_HOME}/scripts/hiho import -jdbcDriver <jdbcDriver> -jdbcUrl <jdbcUrl> -jdbcUsername <jdbcUsername> -jdbcPassword <jdbcPassword> -outputPath <outputPath> -outputStrategy <outputStrategy> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -inputOrderBy <inputOrderBy> -inputLoadTo hive -inputLoadToPath <inputLoadToPath> -hiveDriver <hiveDriver>  -hiveUrl <hiveUrl> -hiveUsername <hiveUsername> -hivePassword <hivePassword> -hivePartitionBy <hivePartitionBy> -hiveIfNotExists <hiveIfNotExists> -hiveTableName <hiveTableName> -hiveSortedBy <hiveSortedBy> -hiveClusteredBy <hiveClusteredBy> 
  Notes:-
  1. Hive table name is mandatory when you are quering more than one query or table that is the case of multiple partition
  2. Please note that sorted feature will not work untill clustered feature is defined
@@ -150,4 +150,5 @@ Other improvements
 -Ivy based build and dependency management
 -Junit and mockito based test cases 
 
-
+Note:- To run TestExportToMySQLDB we need to add hiho-0.4.0.jar, all jars of hadoop and hadoop lib with also mysql-connector-java.jar
+		in the classpath.
