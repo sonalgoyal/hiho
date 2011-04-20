@@ -339,7 +339,7 @@
 		<ivy:cachepath pathid="${name}.redist.classpath" conf="redist" />
 	</target>
 
-	<target name="package" depends="jar,compile,ivy-retrieve-redist" description="Create a redistributable package">
+	<target name="package" depends="deploy,compile,ivy-retrieve-redist" description="Create a redistributable package">
 
 		<mkdir dir="${dist.dir}" />
 
@@ -379,8 +379,6 @@
 		<copy todir="${dist.dir}/lib" includeEmptyDirs="false">
 			<fileset dir="${lib.dir}">
 				<include name="**/*" />
-				<exclude name="ivy*" />
-				<exclude name="ant*" />
 			</fileset>
 		</copy>
 
@@ -420,18 +418,17 @@
 		    <mkdir dir="${integration.dir}/lib"/>
 		    <copy todir="${integration.dir}/lib" includeEmptyDirs="false" flatten="true">
 		      <fileset dir="${build.ivy.lib.dir}/${name}/default/">
-		      	<include name="*/*.jar" />
-		      	<include name="hive*/lib/hive*.jar"/>
+		      	<include name="hive*/lib/hive*.jar" />
 		      </fileset>
 		    </copy> 
 		    
 
 			<copy todir="${integration.dir}/lib" includeEmptyDirs="false">
 				<fileset dir="${lib.dir}">
-					<include name="**/*" />
-					<exclude name="hadoop*" />
-					<exclude name="ivy*" />
-					<exclude name="ant*" />
+					<include name="mysql-connector*jar" />
+					<include name="partner*jar" />
+					<include name="pig*jar" />
+					<include name="wsc*jar" />
 				</fileset>
 			</copy>
 		

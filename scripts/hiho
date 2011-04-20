@@ -1,10 +1,11 @@
 #!/bin/bash
 
-scripts=`dirname "$0"`
-scripts=`cd "$bin"; pwd`
+dir=`dirname "$0"`
+dir=`cd "$bin"; pwd`
 
 if [ -z "$HIHO_HOME" ]; then
-	export HIHO_HOME=${scripts}/..
+	export HIHO_HOME=${dir}
+	echo '$HIHO_HOME is set to ' $HIHO_HOME   
 fi
 
 if [ -z "${HADOOP_HOME}" ]; then

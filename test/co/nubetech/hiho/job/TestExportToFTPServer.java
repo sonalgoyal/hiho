@@ -14,15 +14,14 @@
  */
 package co.nubetech.hiho.job;
 
-import static org.junit.Assert.assertEquals;
-
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
 import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
+import co.nubetech.hiho.common.HihoTestCase;
 
-public class TestExportToFTPServer {
+public class TestExportToFTPServer extends HihoTestCase {
 
 	@Test
 	public void testPopulateConfiguration() {
@@ -118,5 +117,41 @@ public class TestExportToFTPServer {
 		exportToFTPServer.populateConfiguration(args, conf);
 		exportToFTPServer.checkMandatoryConfs(conf);
 	}
+	
+	//still to complete.
+	/*@Test
+	public void testFtpJob() throws Exception {
+		FtpServerFactory serverFactory = new FtpServerFactory();
+		ListenerFactory factory = new ListenerFactory();
+		// set the port of the listener
+		factory.setPort(2221);
+		// replace the default listener
+		serverFactory.addListener("default", factory.createListener());
+				
+        PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
+        userManagerFactory.setFile(new File("/tmp/myusers.properties"));
+        UserManager um = userManagerFactory.createUserManager();
+        
+        BaseUser user = new BaseUser();
+        user.setName("nube");
+        user.setPassword("nube123");
+        user.setHomeDirectory("/tmp");
+        
+        um.save(user);
+        FtpServer server = serverFactory.createServer();
+		server.start();
+		
+		final String inputData = "A\tTimon Leonard,716 Ac Ave,1-857-935-3882,62240"
+				+ "\nD\tMacaulay Jackson,5435 Dui. Avenue,1-770-395-6446,31584"
+				+ "\nB\tCharles Wood,525-9709 In Rd.,1-370-528-4758,62714";
+		createTextFileInHDFS(inputData, "/input", "testFile.txt");
 
+		String[] args = new String[] { "-inputPath", "/input", "-outputPath",
+				"/tmp/output", "-ftpUserName", "nube", "-ftpAddress", "192.168.128.8",
+				"-ftpPortNumper", "2221", "-ftpPassword", "nube123" };
+		ExportToFTPServer job = new ExportToFTPServer();
+		int res = ToolRunner.run(createJobConf(), job, args);
+		assertEquals(0, res);
+		
+	}*/
 }

@@ -177,16 +177,16 @@ public class TestDBQueryInputJobWithCluster extends HihoTestCase {
 		FileStatus[] status = outputFS.listStatus(outputPath, getOutputPathFilter()); 
 		assertTrue(outputFS.exists(outputPath));
 		List<String> expectedOutput = new ArrayList<String>();
-		expectedOutput.add("1000");
-		expectedOutput.add("2000");
-		expectedOutput.add("3000");
-		expectedOutput.add("4000");
-		expectedOutput.add("5000");
-		expectedOutput.add("6000");
-		expectedOutput.add("7000");
-		expectedOutput.add("8000");
-		expectedOutput.add("9000");
-		expectedOutput.add("10000");
+		expectedOutput.add("/aDELIM1000DELIM10");
+		expectedOutput.add("/bDELIM2000DELIM10");
+		expectedOutput.add("/cDELIM3000DELIM10");
+		expectedOutput.add("/dDELIM4000DELIM10");
+		expectedOutput.add("/eDELIM5000DELIM10");
+		expectedOutput.add("/fDELIM6000DELIM10");
+		expectedOutput.add("/gDELIM7000DELIM10");
+		expectedOutput.add("/hDELIM8000DELIM10");
+		expectedOutput.add("/iDELIM9000DELIM10");
+		expectedOutput.add("/jDELIM10000DELIM10");
 		int count = 0;
 		for (FileStatus fileStat: status) {
 			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
@@ -194,7 +194,7 @@ public class TestDBQueryInputJobWithCluster extends HihoTestCase {
 			String line = null;			
 			while ((line = in.readLine()) != null) {
 				logger.debug("Output is " + line);
-				//assertTrue("Matched output " + line , expectedOutput.contains(line));
+				assertTrue("Matched output " + line , expectedOutput.contains(line));
 				expectedOutput.remove(line);
 				count++;
 			}
@@ -204,14 +204,12 @@ public class TestDBQueryInputJobWithCluster extends HihoTestCase {
 	}
 
 
-/*	@Test
+	@Test
 	public void testGeneratePigScript() throws Exception, HIHOException {
 		DBQueryInputJob job = new DBQueryInputJob();
 		String[] args = new String[] {
 				"-jdbcDriver",	"org.hsqldb.jdbcDriver",
 				"-jdbcUrl",	"jdbc:hsqldb:hsql://localhost/URLAccess",
-				// "-jdbcUsername", "",
-				// "-jdbcPassword", "",
 				"-inputLoadTo", "pig",
 				"-inputLoadToPath", "/tmp",
 				"-outputPath", "output",
@@ -231,20 +229,21 @@ public class TestDBQueryInputJobWithCluster extends HihoTestCase {
 	}
 	
 	
+	//still to complete.
 	@Test
 	public void testContentOfPigScript() throws ExecException, IOException {
 		PigServer pigServer = new PigServer("LOCAL");
 		pigServer.registerScript("/tmp/pigScript.txt");
 		//pigServer.registerQuery("A = LOAD 'mapreduce.jdbc.hiho.input.outputPath' USING PigStorage(',') AS (URL:chararray,PAGEVIEW:long);");
-		pigServer.dumpSchema("A") ;
+		/*pigServer.dumpSchema("A") ;
 		String s;
-        /*InputStream fileWithStdOutContents = new DataInputStream( new BufferedInputStream( new FileInputStream(new File("stdout.redirected"))));
+        InputStream fileWithStdOutContents = new DataInputStream( new BufferedInputStream( new FileInputStream(new File("stdout.redirected"))));
         BufferedReader reader = new BufferedReader(new InputStreamReader(fileWithStdOutContents));
         while ((s = reader.readLine()) != null) {
             assertTrue(s.equals("a: {field1: int,field2: float,field3: chararray}") == true);
         }
-        reader.close();
-	}*/
+        reader.close();*/
+	}
 
 
 	private static void startHsqldbServer() {

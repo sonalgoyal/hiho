@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 
 import co.nubetech.apache.hadoop.DBConfiguration;
 import co.nubetech.hiho.common.HIHOConf;
-import co.nubetech.hiho.common.HIHOException;
 
 public class MySQLLoadDataMapper extends
 		Mapper<Text, FSDataInputStream, NullWritable, NullWritable> {

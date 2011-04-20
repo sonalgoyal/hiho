@@ -45,7 +45,7 @@ public class TestHiveUtility {
 		// conf1.set(DBConfiguration.INPUT_CONDITIONS_PROPERTY,"");
 		conf1.set(DBConfiguration.INPUT_QUERY, "select * from employee");
 		String dbProductName = "MYSQL";
-		assertEquals("SELECT id, name FROM student",
+		assertEquals("SELECT id, name FROM student AS student",
 				DBQueryInputJob.getSelectQuery(conf, dbProductName));
 		assertEquals("select * from employee",
 				DBQueryInputJob.getSelectQuery(conf1, dbProductName));

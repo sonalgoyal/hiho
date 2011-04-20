@@ -14,8 +14,6 @@
  */
 package co.nubetech.hiho.job;
 
-import static org.junit.Assert.assertEquals;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -118,6 +116,9 @@ public class TestExportToMySQLDB extends HihoTestCase {
 		exportToMySQLDB.checkMandatoryConfs(conf);
 	}
 
+	/*Here, it is assumed mysql server is running on system and table hiho.employee exists 
+	 * having three columns for ex:- id, name and designation.
+	 */	
 	@Test
 	public void testMySQlBasicExport() throws Exception {
 

@@ -18,7 +18,9 @@ bin/hadoop jar hiho.jar co.nubetech.hiho.job.DBQueryInputJob -conf dbInputTableD
 just specify isAppend = true in the configurations and import. Import will be written to existing HDFS folder.
 
 - configurable format for data import - delimited, avro
-By specifying the mapreduce.jdbc.hiho.input.outputStrategy as DELIMITED or AVRO. 
+By specifying the mapreduce.jdbc.hiho.input.outputStrategy as DELIMITED or AVRO.
+ 
+Note:- Please specify delimiter in double qoutes, because in some cases such as semi colon ';' it breaks For example -delimiter ";". If you are specifing * for inputFieldNames then also you put in double qoutes  
 
 2. Export to Databases
 - high performance MySQL loading using LOAD DATA INFILE

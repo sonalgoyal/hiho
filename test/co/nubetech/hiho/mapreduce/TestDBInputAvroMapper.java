@@ -48,7 +48,7 @@ public class TestDBInputAvroMapper {
 	@Test
 	public final void testMapperValidValues() throws IOException,
 			InterruptedException {
-		OutputCollector<NullWritable, AvroValue<Pair>> output = mock(OutputCollector.class);
+		OutputCollector<AvroValue<Pair>, NullWritable> output = mock(OutputCollector.class);
 		Reporter reporter = mock(Reporter.class);
 
 		DBInputAvroMapper mapper = new DBInputAvroMapper();
@@ -62,8 +62,8 @@ public class TestDBInputAvroMapper {
 				"booleanColumn");
 		ColumnInfo doubleColumn = new ColumnInfo(1, Types.DOUBLE,
 				"doubleColumn");
-		// ColumnInfo floatColumn = new ColumnInfo(1, Types.FLOAT,
-		// "floatColumn");
+		ColumnInfo floatColumn = new ColumnInfo(1, Types.FLOAT,
+		 "floatColumn");
 		ColumnInfo charColumn = new ColumnInfo(1, Types.CHAR, "charColumn");
 		ColumnInfo timeColumn = new ColumnInfo(1, Types.TIME, "timeColumn");
 		ColumnInfo timeStampColumn = new ColumnInfo(1, Types.TIMESTAMP,
@@ -77,7 +77,7 @@ public class TestDBInputAvroMapper {
 		columns.add(longColumn);
 		columns.add(booleanColumn);
 		columns.add(doubleColumn);
-		// columns.add(floatColumn);
+		columns.add(floatColumn);
 		columns.add(charColumn);
 		columns.add(timeColumn);
 		columns.add(timeStampColumn);
@@ -89,7 +89,7 @@ public class TestDBInputAvroMapper {
 		values.add(new Long(26564l));
 		values.add(true);
 		values.add(1.235);
-		// values.add(new Float(1.0f));
+		values.add(new Float(1.0f));
 		values.add('a');
 		values.add(new Time(new Date().getTime()));
 		values.add(new Time(new Date().getTime()));
@@ -118,9 +118,9 @@ public class TestDBInputAvroMapper {
 		pair.key(keyRecord);
 		pair.value(valueRecord);
 
-		//mapper.map(key, val, output, reporter);
+		mapper.map(key, val, output, reporter);
 		
-		verify(output).collect(nullWritable, new AvroValue<Pair>(pair));
+		verify(output).collect(new AvroValue<Pair>(pair), nullWritable);
 	}
 
 	@Test 
