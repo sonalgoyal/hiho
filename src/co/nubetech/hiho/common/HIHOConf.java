@@ -74,5 +74,7 @@ public interface HIHOConf {
 	// conf for mergeJob
 	public static final String MERGE_OLD_PATH = "mapreduce.jdbc.hiho.merge.mergeOldPath";
 	public static final String MERGE_NEW_PATH = "mapreduce.jdbc.hiho.merge.mergeNewPath";
+	
+	public static final String COLUMN_INFO = "mapreduce.jdbc.hiho.db.columnInfo";
 
 }

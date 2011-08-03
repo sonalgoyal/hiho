@@ -31,6 +31,10 @@ public class ColumnInfo {
 		this.type = type;
 		this.name = name;
 	}
+	
+	public ColumnInfo(){
+		
+	}
 
 	public int getIndex() {
 		return index;

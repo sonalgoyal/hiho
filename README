@@ -139,6 +139,12 @@ For Delimited Text Files:
 ${HIHO_HOME}/scripts/hiho merge -newPath testData/merge/inputNew/fileInNewPath.txt -oldPath testData/merge/inputOld/fileInOldPath.txt -mergeBy value -outputPath output -inputFormat co.nubetech.hiho.dedup.DelimitedTextInputFormat -inputKeyClassName org.apache.hadoop.io.Text -inputValueClassName org.apache.hadoop.io.Text
 
 
+8. Export to DB:-
+bin/hadoop jar deploy/hiho-0.4.0.jar co.nubetech.hiho.job.ExportToDB  -jdbcDriver <jdbcDriverName>  -jdbcUrl <jdbcUrl>  -jdbcUsername <jdbcUserName>  -jdbcPassword <jdbcPassword> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -tableName <tableName> -columnNames <columnNames> -inputPath <inputPath> 
+or
+${HIHO_HOME}/scripts/hiho export db -jdbcDriver <jdbcDriverName>  -jdbcUrl <jdbcUrl>  -jdbcUsername <jdbcUserName>  -jdbcPassword <jdbcPassword> -delimiter <delimiter> -numberOfMappers <numberOfMappers> -tableName <tableName> -columnNames <columnNames> -inputPath <inputPath> 
+
+
 New Features in this release
 -incremental import and introduction of AppendFileInputFormat
 -Oracle export
