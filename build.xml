@@ -217,6 +217,13 @@
 		<ivy:cachepath pathid="${name}.hive.classpath" />
 	</target>	
 	
+	<target name="makepom">
+		<ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${basedir}/pom.xml" conf="default,runtime">
+		   <mapping conf="default" scope="compile"/>
+		   <mapping conf="runtime" scope="runtime"/>
+		   
+		</ivy:makepom>
+	</target>
 
 	<!-- Compile core classes for the project -->
 	<target name="compile" depends="init, ivy-retrieve-hadoop,ivy-retrieve-hive,ivy-resolve-pig" description="Compile core classes for the project">

@@ -1,43 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="lib" path="lib/ant-contrib-1.0b3.jar"/>
-	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/commons-net-1.4.1.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-common-0.21.0.jar" sourcepath="/home/sgoyal/hadoop-0.21.0/common/src"/>
-	<classpathentry kind="lib" path="lib/hadoop-common-test-0.21.0.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-hdfs-0.21.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-hdfs-0.21.0.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-hdfs-ant-0.21.0.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-hdfs-test-0.21.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-hdfs-test-0.21.0.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-mapred-0.21.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-mapred-0.21.0.jar" sourcepath="/home/sgoyal/hadoop-0.21.0/mapred/src/java"/>
-	<classpathentry kind="lib" path="lib/hadoop-mapred-examples-0.21.0.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-mapred-test-0.21.0.jar" sourcepath="/home/sgoyal/hadoop-0.21.0/mapred/src/test"/>
-	<classpathentry kind="lib" path="lib/hadoop-mapred-tools-0.21.0.jar"/>
-	<classpathentry kind="lib" path="lib/ivy-2.2.0.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-asl-1.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-mapper-asl-1.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/junit-4.5.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
-	<classpathentry kind="lib" path="lib/mockito-all-1.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/mockito-core-1.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.13.jar"/>
-	<classpathentry kind="lib" path="lib/partner-20.jar"/>
-	<classpathentry kind="lib" path="lib/wsc-20.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/jetty-6.1.14.jar"/>
-	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/jetty-util-6.1.14.jar"/>
-	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/servlet-api-2.5-6.1.14.jar"/>
-	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/jsp-2.1-6.1.14.jar"/>
-	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/jsp-api-2.1-6.1.14.jar"/>
-	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/commons-httpclient-3.1.jar"/>
-	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/hsqldb-1.8.0.10.jar"/>
-	<classpathentry kind="lib" path="/home/sgoyal/hadoop-0.21.0/lib/commons-cli-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/avro-1.4.1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Pig0.7"/>
-	<classpathentry kind="output" path="build/classes"/>
+	<classpathentry kind="src" output="target/classes" path="src/main/java"/>
+	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources"/>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
