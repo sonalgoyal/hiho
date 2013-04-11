@@ -26,7 +26,6 @@ import com.sforce.async.JobInfo;
  */
 
 public class ExportSalesforceMapper extends Mapper<Text, FSDataInputStream, Text, Text> {
-
 		final static Logger logger = Logger
 				.getLogger(co.nubetech.hiho.mapreduce.sf.ExportSalesforceMapper.class);
 		private static SFHandler sfHandler;
@@ -57,6 +56,20 @@ public class ExportSalesforceMapper extends Mapper<Text, FSDataInputStream, Text
 			return conn;			
 		}
 		
+		/**
+		 * @return the job
+		 */
+		public JobInfo getJob() {
+			return job;
+		}
+
+		/**
+		 * @param job the job to set
+		 */
+		public void setJob(JobInfo job) {
+			this.job = job;
+		}
+
 		@Override
 		protected void setup(Mapper.Context context) throws IOException,
 				InterruptedException {
@@ -77,7 +90,6 @@ public class ExportSalesforceMapper extends Mapper<Text, FSDataInputStream, Text
 				e.printStackTrace();
 				throw new IOException(e);
 			}
-
 		}
 
 		
@@ -93,8 +105,7 @@ public class ExportSalesforceMapper extends Mapper<Text, FSDataInputStream, Text
 	       catch(Exception e) {
 	    	   e.printStackTrace();
 	    	   throw new IOException(e);
-	       }
-			
+	       }			
 		}
 
 		/**

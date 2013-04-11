@@ -73,6 +73,40 @@ public class TestExportSalesforceMapper {
 		verify(mockSFHandler, times(1)).getBulkConnection(user, password);	
 		assertEquals(id, mapper.getJobId().toString());
 	}
+	
+	/*
+	 * conn=getConnection();
+				BatchInfo batch = sfHandler.createBatch(val, conn, job);
+				batchId.set(batch.getId());
+				context.write(jobId, batchId);
+	 */
 
+	@Test
+	public final void testMapper() throws IOException, InterruptedException, ConnectionException, AsyncApiException {
+		ExportSalesforceMapper mapper = new ExportSalesforceMapper();
+		BulkConnection conn = mock(BulkConnection.class);
+		SFHandler mockSFHandler = mock(SFHandler.class);
+		mapper.setConnection(conn);
+		mapper.setSfHandler(mockSFHandler);
+		
+		Mapper.Context context = mock(Mapper.Context.class);
+		BatchInfo batchInfo = new BatchInfo();
+		String id = "id";
+		batchInfo.setId(id);
+		Text batchId = new Text();
+		mapper.setBatchId(batchId);		
+		
+		JobInfo info = new JobInfo();
+		String id1 = "id1";
+		info.setId(id1);
+		when(mockSFHandler.createBatch(any(FSDataInputStream.class), any(BulkConnection.class), any(JobInfo.class))).thenReturn(
+				batchInfo);
+		mapper.setSfHandler(mockSFHandler);
+		mapper.setJob(info);
+		mapper.setJobId(new Text(id1));
+		mapper.map(new Text("abc"), mock(FSDataInputStream.class), context);
+		assertEquals(id, batchId.toString());
+		verify(context, times(1)).write(new Text(info.getId()), batchId);		
+	}
 
 }
