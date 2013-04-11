@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
-import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.hiho.mapreduce.lib.db.apache.DBConfiguration;
 import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
 

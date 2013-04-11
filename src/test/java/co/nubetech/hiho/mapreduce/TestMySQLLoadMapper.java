@@ -27,7 +27,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.junit.Test;
 
-import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.hiho.mapreduce.lib.db.apache.DBConfiguration;
 import co.nubetech.hiho.common.HIHOConf;
 
 public class TestMySQLLoadMapper {

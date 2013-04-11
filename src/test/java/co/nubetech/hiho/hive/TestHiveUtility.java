@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
-import co.nubetech.apache.hadoop.DBConfiguration;
+import co.nubetech.hiho.mapreduce.lib.db.apache.DBConfiguration;
 import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
 import co.nubetech.hiho.job.DBQueryInputJob;

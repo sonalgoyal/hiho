@@ -52,7 +52,7 @@ import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
 import co.nubetech.hiho.common.OutputStrategyEnum;
 import co.nubetech.hiho.hive.HiveUtility;
-import co.nubetech.hiho.mapred.avro.GenericRecordAvroOutputFormat;
+//import co.nubetech.hiho.mapred.avro.GenericRecordAvroOutputFormat;
 import co.nubetech.hiho.mapreduce.DBInputAvroMapper;
 import co.nubetech.hiho.mapreduce.DBInputDelimMapper;
 import co.nubetech.hiho.mapreduce.lib.db.DBQueryInputFormat;
@@ -660,7 +660,7 @@ public class DBQueryInputJob extends Configured implements Tool {
 		}
 		// avro to be handled differently, thanks to all the incompatibilities
 		// in the apis.
-		else {
+		/*else {
 			String inputQuery = conf.get(DBConfiguration.INPUT_QUERY);
 			String inputBoundingQuery = conf
 					.get(DBConfiguration.INPUT_BOUNDING_QUERY);
@@ -700,13 +700,13 @@ public class DBQueryInputJob extends Configured implements Tool {
 				 * org.apache.hadoop.mapred.SequenceFileOutputFormat
 				 * .setOutputPath(jobConf, new
 				 * Path(getConf().get(HIHOConf.INPUT_OUTPUT_PATH)));
-				 */
+				 
 				JobClient.runJob(jobConf);
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 
-		}
+		}*/
 
 	}
 

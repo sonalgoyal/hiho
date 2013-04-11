@@ -31,7 +31,7 @@ public class TestExportSalesForceJob {
 				"tryc,cl,cg123avIotXX9dBlGy3iNiGytlrwy", "-sfObjectType",
 				"Account", "-sfHeaders",
 				"AccountNumber,Name,BillingState,Phone" };
-		ExportSalesForceJob exportSalesForceJob = new ExportSalesForceJob();
+		ExportSalesforceJob exportSalesForceJob = new ExportSalesforceJob();
 		Configuration conf = new Configuration();
 		exportSalesForceJob.populateConfiguration(args, conf);
 
@@ -51,7 +51,7 @@ public class TestExportSalesForceJob {
 				"tryc,cl,cg123avIotXX9dBlGy3iNiGytlrwy", "-sfObjectType",
 				"Account", "-sfHeaders",
 				"AccountNumber,Name,BillingState,Phone" };
-		ExportSalesForceJob exportSalesForceJob = new ExportSalesForceJob();
+		ExportSalesforceJob exportSalesForceJob = new ExportSalesforceJob();
 		Configuration conf = new Configuration();
 		exportSalesForceJob.populateConfiguration(args, conf);
 		exportSalesForceJob.checkMandatoryConfs(conf);
@@ -64,7 +64,7 @@ public class TestExportSalesForceJob {
 				"tryc,cl,cg123avIotXX9dBlGy3iNiGytlrwy", "-sfObjectType",
 				"Account", "-sfHeaders",
 				"AccountNumber,Name,BillingState,Phone" };
-		ExportSalesForceJob exportSalesForceJob = new ExportSalesForceJob();
+		ExportSalesforceJob exportSalesForceJob = new ExportSalesforceJob();
 		Configuration conf = new Configuration();
 		exportSalesForceJob.populateConfiguration(args, conf);
 		exportSalesForceJob.checkMandatoryConfs(conf);
@@ -76,7 +76,7 @@ public class TestExportSalesForceJob {
 				"-sfPassword", "tryc,cl,cg123avIotXX9dBlGy3iNiGytlrwy",
 				"-sfObjectType", "Account", "-sfHeaders",
 				"AccountNumber,Name,BillingState,Phone" };
-		ExportSalesForceJob exportSalesForceJob = new ExportSalesForceJob();
+		ExportSalesforceJob exportSalesForceJob = new ExportSalesforceJob();
 		Configuration conf = new Configuration();
 		exportSalesForceJob.populateConfiguration(args, conf);
 		exportSalesForceJob.checkMandatoryConfs(conf);
@@ -87,7 +87,7 @@ public class TestExportSalesForceJob {
 		String[] args = new String[] { "-inputPath", "input", "-sfUserName",
 				"username", "-sfPassword", "-sfObjectType", "Account",
 				"-sfHeaders", "AccountNumber,Name,BillingState,Phone" };
-		ExportSalesForceJob exportSalesForceJob = new ExportSalesForceJob();
+		ExportSalesforceJob exportSalesForceJob = new ExportSalesforceJob();
 		Configuration conf = new Configuration();
 		exportSalesForceJob.populateConfiguration(args, conf);
 		exportSalesForceJob.checkMandatoryConfs(conf);
@@ -98,7 +98,7 @@ public class TestExportSalesForceJob {
 		String[] args = new String[] { "-inputPath", "input", "-sfUserName",
 				"username", "-sfPassword", "asdf12313", "-sfObjectType",
 				"-sfHeaders", "AccountNumber,Name,BillingState,Phone" };
-		ExportSalesForceJob exportSalesForceJob = new ExportSalesForceJob();
+		ExportSalesforceJob exportSalesForceJob = new ExportSalesforceJob();
 		Configuration conf = new Configuration();
 		exportSalesForceJob.populateConfiguration(args, conf);
 		exportSalesForceJob.checkMandatoryConfs(conf);
@@ -109,7 +109,7 @@ public class TestExportSalesForceJob {
 		String[] args = new String[] { "-inputPath", "input", "-sfUserName",
 				"username", "-sfPassword", "asdf12313", "-sfObjectType",
 				"Account", "-sfHeaders" };
-		ExportSalesForceJob exportSalesForceJob = new ExportSalesForceJob();
+		ExportSalesforceJob exportSalesForceJob = new ExportSalesforceJob();
 		Configuration conf = new Configuration();
 		exportSalesForceJob.populateConfiguration(args, conf);
 		exportSalesForceJob.checkMandatoryConfs(conf);

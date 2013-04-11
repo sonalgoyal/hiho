@@ -19,9 +19,9 @@ import static org.junit.Assert.assertEquals;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Test;
 
-import co.nubetech.apache.hadoop.DBConfiguration;
 import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
+import co.nubetech.hiho.mapreduce.lib.db.apache.DBConfiguration;
 
 
 public class TestDBQueryInputJob {

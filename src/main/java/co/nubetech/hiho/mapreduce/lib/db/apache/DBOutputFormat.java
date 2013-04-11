@@ -26,6 +26,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.OutputCommitter;
@@ -193,14 +194,14 @@ extends OutputFormat<K,V> {
    * @param tableName The table to insert data into
    * @param fieldNames The field names in the table.
    */
-  public static void setOutput(Job job, String tableName, 
+  public static void setOutput(Job job, JobConf jobConf, String tableName, 
       String... fieldNames) throws IOException {
     if(fieldNames.length > 0 && fieldNames[0] != null) {
-      DBConfiguration dbConf = setOutput(job, tableName);
+      DBConfiguration dbConf = setOutput(job, jobConf, tableName);
       dbConf.setOutputFieldNames(fieldNames);
     } else {
       if (fieldNames.length > 0) {
-        setOutput(job, tableName, fieldNames.length);
+        setOutput(job, jobConf, tableName, fieldNames.length);
       }
       else { 
         throw new IllegalArgumentException(
@@ -217,17 +218,17 @@ extends OutputFormat<K,V> {
    * @param tableName The table to insert data into
    * @param fieldCount the number of fields in the table.
    */
-  public static void setOutput(Job job, String tableName, 
+  public static void setOutput(Job job, JobConf jobConf, String tableName, 
       int fieldCount) throws IOException {
-    DBConfiguration dbConf = setOutput(job, tableName);
+    DBConfiguration dbConf = setOutput(job, jobConf, tableName);
     dbConf.setOutputFieldCount(fieldCount);
   }
   
-  private static DBConfiguration setOutput(Job job,
+  private static DBConfiguration setOutput(Job job, JobConf jobConf,
       String tableName) throws IOException {
     job.setOutputFormatClass(DBOutputFormat.class);
-    job.setReduceSpeculativeExecution(false);
-
+    jobConf.setReduceSpeculativeExecution(false);
+    
     DBConfiguration dbConf = new DBConfiguration(job.getConfiguration());
     
     dbConf.setOutputTableName(tableName);

@@ -34,8 +34,8 @@
 		<mysql.connector.version>5.1.13</mysql.connector.version>
 		<jackson.version>1.4.0</jackson.version>
 		<commons-net.version>1.4.1</commons-net.version>
-		<salesforce.version>26.0.0</salesforce.version>
-		<salesforce.partner.version>26.0.0</salesforce.partner.version>
+		<salesforce.version>27.0.0</salesforce.version>
+		<salesforce.partner.version>27.0.0</salesforce.partner.version>
 		<junit.version>4.5</junit.version>
 		<compileSource>1.6</compileSource>
 		<maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
@@ -58,6 +58,12 @@
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-core</artifactId>
 					<version>${hadoop.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-test</artifactId>
+					<version>${hadoop.version}</version>
+					<scope>test</scope>
 				</dependency>
 			</dependencies>
 		</profile>

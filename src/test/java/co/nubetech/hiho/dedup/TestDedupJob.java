@@ -187,7 +187,7 @@ public class TestDedupJob extends HihoTestCase {
 		expectedOutput.add("Kennedy Bailey,Plato Atkinson,Stuart Guy,Rooney Levy,Judah Benson");
 		int count = 0;
 		for (FileStatus fileStat: status) {
-			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			logger.debug("File status is " + fileStat.getPath() );
 			FSDataInputStream in = outputFS.open(fileStat.getPath());
 			String line = null;			
 			while ((line = in.readLine()) != null) {
@@ -236,7 +236,7 @@ public class TestDedupJob extends HihoTestCase {
 		expectedOutput.add("Kennedy Bailey,Plato Atkinson,Stuart Guy,Rooney Levy,Judah Benson");
 		int count = 0;
 		for (FileStatus fileStat: status) {
-			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			logger.debug("File status is " + fileStat.getPath() );
 			FSDataInputStream in = outputFS.open(fileStat.getPath());
 			String line = null;			
 			while ((line = in.readLine()) != null) {
@@ -445,7 +445,7 @@ public class TestDedupJob extends HihoTestCase {
 		expectedOutput.add("Kennedy Bailey,Plato Atkinson,Stuart Guy,Rooney Levy,Judah Benson");
 		int count = 0;
 		for (FileStatus fileStat: status) {
-			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			logger.debug("File status is " + fileStat.getPath() );
 			FSDataInputStream in = outputFS.open(fileStat.getPath());
 			String line = null;			
 			while ((line = in.readLine()) != null) {

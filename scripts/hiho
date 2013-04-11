@@ -41,7 +41,7 @@ EXPORTTO=$2
  	 CLASS='co.nubetech.hiho.job.ExportToOracleDb'
 	fi
 	if [ "$EXPORTTO" = "saleforce" ] ; then
- 	 CLASS='co.nubetech.hiho.job.sf.ExportSalesForceJob'
+ 	 CLASS='co.nubetech.hiho.job.sf.ExportSalesforceJob'
 	fi
 fi
 

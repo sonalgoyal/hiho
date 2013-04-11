@@ -18,6 +18,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
@@ -26,9 +27,12 @@ import org.apache.hadoop.util.ToolRunner;
 
 import co.nubetech.hiho.common.HIHOConf;
 import co.nubetech.hiho.common.HIHOException;
-import co.nubetech.hiho.mapreduce.sf.SalesForceLoadMapper;
+//import co.nubetech.hiho.mapreduce.sf.SalesForceLoadMapper;
+import co.nubetech.hiho.mapreduce.lib.input.FileStreamInputFormat;
+import co.nubetech.hiho.mapreduce.sf.ExportSalesforceMapper;
+import co.nubetech.hiho.mapreduce.sf.ExportSalesforceReducer;
 
-public class ExportSalesForceJob extends Configured implements Tool {
+public class ExportSalesforceJob extends Configured implements Tool {
 
 	private String inputPath = null;
 
@@ -42,9 +46,9 @@ public class ExportSalesForceJob extends Configured implements Tool {
 				conf.set(HIHOConf.SALESFORCE_PASSWORD, args[++i]);
 			} else if ("-sfObjectType".equals(args[i])) {
 				conf.set(HIHOConf.SALESFORCE_SOBJECTYPE, args[++i]);
-			} else if ("-sfHeaders".equals(args[i])) {
+			} /*else if ("-sfHeaders".equals(args[i])) {
 				conf.set(HIHOConf.SALESFORCE_HEADERS, args[++i]);
-			}
+			}*/
 		}
 	}
 
@@ -65,10 +69,10 @@ public class ExportSalesForceJob extends Configured implements Tool {
 			throw new HIHOException(
 					"The SalesForce SOBJECTYPE is not specified, please specify SalesForce SOBJECTYPE");
 		}
-		if (conf.get(HIHOConf.SALESFORCE_HEADERS) == null) {
+		/*if (conf.get(HIHOConf.SALESFORCE_HEADERS) == null) {
 			throw new HIHOException(
 					"The SalesForce Headers is not specified, please specify SalesForce Headers");
-		}
+		}*/
 	}
 
 	@Override
@@ -83,17 +87,18 @@ public class ExportSalesForceJob extends Configured implements Tool {
 		}
 
 		Job job = new Job(conf);
-		job.setJobName("SaleForceLoading");
-		job.setMapperClass(SalesForceLoadMapper.class);
-		job.setJarByClass(SalesForceLoadMapper.class);
+		job.setJobName("SalesforceLoading");
+		//job.setMapperClass(SalesForceLoadMapper.class);
+		//job.setJarByClass(SalesForceLoadMapper.class);
 		job.setNumReduceTasks(0);
 
-		job.setInputFormatClass(TextInputFormat.class);
-		TextInputFormat.addInputPath(job, new Path(inputPath));
-		// NLineInputFormat.setNumLinesPerSplit(job, 10);
-
-		job.setMapOutputKeyClass(NullWritable.class);
-		job.setMapOutputValueClass(NullWritable.class);
+		job.setInputFormatClass(FileStreamInputFormat.class);
+		FileStreamInputFormat.addInputPath(job, new Path(inputPath));
+		job.setMapperClass(ExportSalesforceMapper.class);
+		job.setJarByClass(FileStreamInputFormat.class);
+		job.setReducerClass(ExportSalesforceReducer.class);
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(Text.class);
 
 		job.setOutputFormatClass(NullOutputFormat.class);
 
@@ -110,7 +115,7 @@ public class ExportSalesForceJob extends Configured implements Tool {
 
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(),
-				new ExportSalesForceJob(), args);
+				new ExportSalesforceJob(), args);
 		System.exit(res);
 	}
 

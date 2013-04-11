@@ -26,6 +26,8 @@ import java.sql.SQLException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
+
+import co.nubetech.hiho.mapreduce.lib.db.apache.DBInputFormat.NullDBWritable;
 /**
  * A container for configuration property names for jobs with DB input/output.
  *  

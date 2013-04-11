@@ -434,7 +434,7 @@ public class TestMergeJob extends HihoTestCase {
 		expectedOutput.add("Macaulay Jackson,5435 Dui. Avenue,1-770-395-6446,31584");
 		int count = 0;
 		for (FileStatus fileStat: status) {
-			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			logger.debug("File status is " + fileStat.getPath() );
 			FSDataInputStream in = outputFS.open(fileStat.getPath());
 			String line = null;			
 			while ((line = in.readLine()) != null) {
@@ -488,7 +488,7 @@ public class TestMergeJob extends HihoTestCase {
 		expectedOutput.add("Macaulay Jackson,5435 Dui. Avenue,1-770-395-6446,31584");
 		int count = 0;
 		for (FileStatus fileStat: status) {
-			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			logger.debug("File status is " + fileStat.getPath() );
 			FSDataInputStream in = outputFS.open(fileStat.getPath());
 			String line = null;			
 			while ((line = in.readLine()) != null) {
@@ -542,7 +542,7 @@ public class TestMergeJob extends HihoTestCase {
 		expectedOutput.add("Macaulay Jackson,5435 Dui. Avenue,1-770-395-6446,31584");
 		int count = 0;
 		for (FileStatus fileStat: status) {
-			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			logger.debug("File status is " + fileStat.getPath() );
 			FSDataInputStream in = outputFS.open(fileStat.getPath());
 			String line = null;			
 			while ((line = in.readLine()) != null) {
@@ -595,7 +595,7 @@ public class TestMergeJob extends HihoTestCase {
 		expectedOutput.add("Macaulay Jackson,5435 Dui. Avenue,1-770-395-6446,31584");
 		int count = 0;
 		for (FileStatus fileStat: status) {
-			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			logger.debug("File status is " + fileStat.getPath() );
 			FSDataInputStream in = outputFS.open(fileStat.getPath());
 			String line = null;			
 			while ((line = in.readLine()) != null) {
@@ -651,7 +651,7 @@ public class TestMergeJob extends HihoTestCase {
 		expectedOutput.add("Macaulay Jackson,5435 Dui. Avenue,1-770-395-6446,31584");
 		int count = 0;
 		for (FileStatus fileStat: status) {
-			logger.debug("File status is " + fileStat.getPath() + " and is it a dir? " + fileStat.isDirectory());
+			logger.debug("File status is " + fileStat.getPath() );
 			FSDataInputStream in = outputFS.open(fileStat.getPath());
 			String line = null;			
 			while ((line = in.readLine()) != null) {
